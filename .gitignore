@@ -1,3 +1,4 @@
 target
 /webhello/target
-.DS_STORE
+.DS_Store
+*/.DS_Store
