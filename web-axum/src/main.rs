@@ -18,7 +18,7 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(ip).await.unwrap();
 
     let mime_type = FromStr::from_str(r#"text/html; encoding="utf-8""#).unwrap();
-    let page = tower::ServeFile::new_with_mime("assets/index.html", &mime_type);
+    let page = tower::ServeFile::new_with_mime("html/index.html", &mime_type);
 
     let mime_type = FromStr::from_str("image/vnd.microsoft.icon").unwrap();
     let favicon = tower::ServeFile::new_with_mime("assets/favicon.ico", &mime_type);
