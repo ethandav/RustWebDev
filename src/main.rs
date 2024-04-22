@@ -12,7 +12,7 @@ use tower_http::cors::{CorsLayer, AllowOrigin, AllowMethods};
 use http::HeaderName;
 use std::collections::HashMap;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct Question {
     id: QuestionId,
     title: String,
@@ -20,7 +20,7 @@ struct Question {
     tags: Option<Vec<String>>,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct QuestionId(String);
 
 impl Question {
@@ -68,18 +68,13 @@ struct Store {
 impl Store {
     fn new() -> Self {
         Store {
-            questions: HashMap::new(),
+            questions: Self::init(),
         }
     }
 
-    fn init(self) -> Self {
-        let question = Question::new(
-            QuestionId::from_str("1").expect("Id not set"),
-            "How?".to_string(),
-            "PleaseHelp!".to_string(),
-            Some(vec!["general".to_string()])
-        );
-        self.add_question(question)
+    fn init() -> HashMap<QuestionId, Question> {
+        let file = include_str!("../questions.json");
+        serde_json::from_str(file).expect("Can't read questions.json")
     }
 
     fn add_question(mut self, question: Question) -> Self {
