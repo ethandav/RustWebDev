@@ -6,10 +6,11 @@ use axum::{
     extract::Path,
     Json,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize };
 use std::{str::FromStr, net::SocketAddr, net::IpAddr, net::Ipv4Addr, io};
 use tower_http::cors::{CorsLayer, AllowOrigin, AllowMethods};
 use http::HeaderName;
+use std::collections::HashMap;
 
 #[derive(Debug, Serialize)]
 struct Question {
@@ -19,7 +20,7 @@ struct Question {
     tags: Option<Vec<String>>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
 struct QuestionId(String);
 
 impl Question {
@@ -57,6 +58,33 @@ async fn get_questions(Path(question_id): Path<String>) -> Result<impl IntoRespo
             Ok(Json(question))
         },
         Err(_) => Err((StatusCode::BAD_REQUEST, "Invalid ID format".to_string()))
+    }
+}
+
+struct Store {
+    questions: HashMap<QuestionId, Question>,
+}
+
+impl Store {
+    fn new() -> Self {
+        Store {
+            questions: HashMap::new(),
+        }
+    }
+
+    fn init(self) -> Self {
+        let question = Question::new(
+            QuestionId::from_str("1").expect("Id not set"),
+            "How?".to_string(),
+            "PleaseHelp!".to_string(),
+            Some(vec!["general".to_string()])
+        );
+        self.add_question(question)
+    }
+
+    fn add_question(mut self, question: Question) -> Self {
+        self.questions.insert(question.id.clone(), question);
+        self
     }
 }
 
