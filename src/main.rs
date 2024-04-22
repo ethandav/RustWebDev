@@ -12,7 +12,7 @@ use tower_http::cors::{CorsLayer, AllowOrigin, AllowMethods};
 use http::HeaderName;
 use std::collections::HashMap;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 struct Question {
     id: QuestionId,
     title: String,
@@ -61,6 +61,7 @@ async fn get_questions(Path(question_id): Path<String>) -> Result<impl IntoRespo
     }
 }
 
+#[derive(Clone)]
 struct Store {
     questions: HashMap<QuestionId, Question>,
 }
@@ -81,10 +82,20 @@ impl Store {
         self.questions.insert(question.id.clone(), question);
         self
     }
+
+    fn show_question(self) {
+        for(key ,value) in self.questions.into_iter() {
+            println!("{}", value.content)
+        }
+    }
 }
 
 #[tokio::main]
 async fn main() {
+
+    let store = Store::new();
+    store.show_question();
+
     let ip = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 3000);
     eprintln!("webhello: serving {}", ip);
     let listener = tokio::net::TcpListener::bind(ip).await.unwrap();
