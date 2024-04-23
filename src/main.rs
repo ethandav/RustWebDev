@@ -229,6 +229,10 @@ fn extract_pagination(
     }
 }
 
+async fn not_found() -> impl IntoResponse {
+    (StatusCode::NOT_FOUND, "404 Not Found")
+}
+
 #[tokio::main]
 async fn main() {
     let store = Arc::new(Store::new());
@@ -249,7 +253,8 @@ async fn main() {
                 .allow_methods(AllowMethods::any())
                 .allow_headers(vec![HeaderName::from_static("content-type")]),
         )
-        .layer(Extension(store));
+        .layer(Extension(store))
+        .fallback(get(not_found));
 
     axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>()).await.unwrap();
 }
