@@ -5,6 +5,7 @@ use axum::{
     Router,
     extract::Path,
     extract::Extension,
+    extract::Query,
     Json,
 };
 use serde::{Deserialize, Serialize };
@@ -31,30 +32,11 @@ struct Question {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct QuestionId(String);
 
-impl Question {
-    fn new(id: QuestionId, title: String, content: String, tags: Option<Vec<String>>) -> Self {
-        Question {
-            id,
-            title,
-            content,
-            tags,
-        }
-    }
-}
-
-impl FromStr for QuestionId {
-    type Err = io::Error;
-
-    fn from_str(id: &str) -> Result<Self, Self::Err> {
-        if id.is_empty() {
-            Err(io::Error::new(io::ErrorKind::InvalidInput, "No ID provided"))
-        } else {
-            Ok(QuestionId(id.to_string()))
-        }
-    }
-}
-
-async fn get_questions(Extension(store): Extension<Arc<Store>>) -> Result<Json<Vec<Question>>, StatusCode> {
+async fn get_questions(
+    Extension(store): Extension<Arc<Store>>,
+    query: Query<QuestionQuery>
+) -> Result<Json<Vec<Question>>, StatusCode> {
+    eprintln!("{:?}", query);
     let res: Vec<Question> = store.questions.values().cloned().collect();
     Ok(Json(res))
 }
@@ -93,6 +75,11 @@ impl Store {
             eprintln!("{}", v.content);
         }
     }
+}
+
+#[derive(Debug, Deserialize)]
+struct QuestionQuery {
+    tag: Option<String>,
 }
 
 #[tokio::main]
