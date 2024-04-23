@@ -117,7 +117,7 @@ struct QuestionQuery {
 
 #[derive(Debug)]
 enum Error {
-    ParseError(std::num::ParseIntError),
+    Parse(std::num::ParseIntError),
     MissingParameters,
     QuestionNotFound,
 }
@@ -125,7 +125,7 @@ enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
-            Error::ParseError(ref err) => {
+            Error::Parse(ref err) => {
                 write!(f, "Cannot parse parameter: {}", err)
             },
             Error::MissingParameters => write!(f, "Missing parameter"),
@@ -137,7 +137,7 @@ impl std::fmt::Display for Error {
 impl IntoResponse for Error {
     fn into_response(self) -> Response<Body> {
         let (status, message) = match self {
-            Error::ParseError(_) => (StatusCode::BAD_REQUEST, "Invalid parameters"),
+            Error::Parse(_) => (StatusCode::BAD_REQUEST, "Invalid parameters"),
             Error::MissingParameters => (StatusCode::BAD_REQUEST, "Missing parameters"),
             Error::QuestionNotFound => (StatusCode::NOT_FOUND, "Question not found"),
         };
@@ -158,8 +158,8 @@ fn extract_pagination(
     query: Query<QuestionQuery>
 ) -> Result<Pagination, Error> {
     if let (Some(start), Some(end)) = (&query.start, &query.end) {
-        let start_parsed = start.parse::<usize>().map_err(Error::ParseError)?;
-        let end_parsed = end.parse::<usize>().map_err(Error::ParseError)?;
+        let start_parsed = start.parse::<usize>().map_err(Error::Parse)?;
+        let end_parsed = end.parse::<usize>().map_err(Error::Parse)?;
 
         Ok(Pagination {
             start: start_parsed,
