@@ -4,10 +4,18 @@ use axum::{
     routing::get,
     Router,
     extract::Path,
+    extract::Extension,
     Json,
 };
 use serde::{Deserialize, Serialize };
-use std::{str::FromStr, net::SocketAddr, net::IpAddr, net::Ipv4Addr, io};
+use std::{
+    str::FromStr,
+    net::SocketAddr,
+    net::IpAddr,
+    net::Ipv4Addr,
+    io,
+    sync::Arc
+};
 use tower_http::cors::{CorsLayer, AllowOrigin, AllowMethods};
 use http::HeaderName;
 use std::collections::HashMap;
@@ -46,19 +54,9 @@ impl FromStr for QuestionId {
     }
 }
 
-async fn get_questions(Path(question_id): Path<String>) -> Result<impl IntoResponse, impl IntoResponse> {
-    match QuestionId::from_str(&question_id) {
-        Ok(id) => {
-            let question = Question::new(
-                id,
-                "First Question".to_string(),
-                "Content of question".to_string(),
-                Some(vec!["faq".to_string()]),
-            );
-            Ok(Json(question))
-        },
-        Err(_) => Err((StatusCode::BAD_REQUEST, "Invalid ID format".to_string()))
-    }
+async fn get_questions(Extension(store): Extension<Arc<Store>>) -> Result<Json<Vec<Question>>, StatusCode> {
+    let res: Vec<Question> = store.questions.values().cloned().collect();
+    Ok(Json(res))
 }
 
 #[derive(Clone)]
@@ -88,25 +86,32 @@ impl Store {
             println!("{}", value.content)
         }
     }
+
+    async fn get_question(self, Path(question_id): Path<String>) {
+        let question = self.questions.get(&QuestionId(question_id));
+        if let Some(v) = question {
+            eprintln!("{}", v.content);
+        }
+    }
 }
 
 #[tokio::main]
 async fn main() {
-
-    let store = Store::new();
-    store.show_question();
+    let store = Arc::new(Store::new());
 
     let ip = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 3000);
-    eprintln!("webhello: serving {}", ip);
+    eprintln!("Questions server: serving at {}", ip);
     let listener = tokio::net::TcpListener::bind(ip).await.unwrap();
+
     let app = Router::new()
-        .route("/questions/:question_id", get(get_questions))
+        .route("/questions", get(get_questions))
         .layer(
             CorsLayer::new()
                 .allow_origin(AllowOrigin::any())
                 .allow_methods(AllowMethods::any())
                 .allow_headers(vec![HeaderName::from_static("content-type")]),
-        );
+        )
+        .layer(Extension(store));
 
-    axum::serve(listener, app.into_make_service()).await.unwrap();
+    axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>()).await.unwrap();
 }
