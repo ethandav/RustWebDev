@@ -8,6 +8,7 @@ use axum::{
     Router,
     extract::Extension,
     extract::Query,
+    extract::Form,
     extract::Path,
     Json,
     body::Body,
@@ -116,7 +117,29 @@ async fn delete_question(
         },
         None => Err(Error::QuestionNotFound)
     }
+}
 
+async fn add_answer(
+    Extension(store): Extension<Arc<Store>>,
+    Form(form): Form<AnswerForm>
+) -> Result<impl IntoResponse, Error> {
+    eprintln!("Content: {:?}", form);
+    if let (Some(content), Some(question_id)) = (&form.content, &form.question_id) {
+        let answer = Answer {
+            id: AnswerId("1".to_string()),
+            content: content.to_string(),
+            question_id: QuestionId(question_id.to_string()),
+        };
+        store.answers.write().await.insert(answer.id.clone(), answer);
+        let response = Response::builder()
+            .status(StatusCode::OK)
+            .body(Body::from("Question added"))
+            .unwrap();
+
+        Ok(response)
+    } else {
+        Err(Error::MissingParameters)
+    }
 }
 
 #[derive(Clone)]
@@ -143,6 +166,12 @@ impl Store {
 struct QuestionQuery {
     start: Option<String>,
     end: Option<String>
+}
+
+#[derive(Debug, Deserialize)]
+struct AnswerForm {
+    content: Option<String>,
+    question_id: Option<String>,
 }
 
 #[derive(Debug)]
@@ -213,6 +242,7 @@ async fn main() {
         .route("/questions", post(add_question))
         .route("/questions/:id", put(update_question))
         .route("/questions/:id", delete(delete_question))
+        .route("/answers", post(add_answer))
         .layer(
             CorsLayer::new()
                 .allow_origin(AllowOrigin::any())
