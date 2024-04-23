@@ -3,9 +3,11 @@ use axum::{
     response::IntoResponse,
     routing::get,
     routing::post,
+    routing::put,
     Router,
     extract::Extension,
     extract::Query,
+    extract::Path,
     Json,
     body::Body,
 };
@@ -72,6 +74,23 @@ async fn add_question(
     Ok(response)
 }
 
+async fn update_question(
+    Extension(store): Extension<Arc<Store>>,
+    Path(id): Path<String>,
+    Json(question): Json<Question>
+) -> Result<impl IntoResponse, Error> {
+    match store.questions.write().await.get_mut(&QuestionId(id)) {
+        Some(q) => *q = question,
+        None => return Err(Error::QuestionNotFound)
+    }
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .body(Body::from("Question updated"))
+        .unwrap();
+
+    Ok(response)
+}
+
 #[derive(Clone)]
 struct Store {
     questions: Arc<RwLock<HashMap<QuestionId, Question>>>,
@@ -100,6 +119,7 @@ struct QuestionQuery {
 enum Error {
     ParseError(std::num::ParseIntError),
     MissingParameters,
+    QuestionNotFound,
 }
 
 impl std::fmt::Display for Error {
@@ -109,7 +129,22 @@ impl std::fmt::Display for Error {
                 write!(f, "Cannot parse parameter: {}", err)
             },
             Error::MissingParameters => write!(f, "Missing parameter"),
+            Error::QuestionNotFound => write!(f, "Question not found"),
         }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> Response<Body> {
+        let (status, message) = match self {
+            Error::ParseError(_) => (StatusCode::BAD_REQUEST, "Invalid parameters"),
+            Error::MissingParameters => (StatusCode::BAD_REQUEST, "Missing parameters"),
+            Error::QuestionNotFound => (StatusCode::NOT_FOUND, "Question not found"),
+        };
+        Response::builder()
+            .status(status)
+            .body(Body::from(message))
+            .unwrap()
     }
 }
 
@@ -146,6 +181,7 @@ async fn main() {
     let app = Router::new()
         .route("/questions", get(get_questions))
         .route("/questions", post(add_question))
+        .route("/questions/:id", put(update_question))
         .layer(
             CorsLayer::new()
                 .allow_origin(AllowOrigin::any())
