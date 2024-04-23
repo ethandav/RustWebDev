@@ -20,6 +20,7 @@ use std::{
 use tower_http::cors::{CorsLayer, AllowOrigin, AllowMethods};
 use http::HeaderName;
 use std::collections::HashMap;
+use tokio::sync::RwLock;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 struct Question {
@@ -41,7 +42,7 @@ async fn get_questions(
         match extract_pagination(query) {
             Ok(pagination) => {
                 eprintln!("Pagination: start = {}, end = {}", pagination.start, pagination.end);
-                let res: Vec<Question> = store.questions.values()
+                let res: Vec<Question> = store.questions.read().await.values()
                     .skip(pagination.start)
                     .take(pagination.end - pagination.start)
                     .cloned()
@@ -54,20 +55,20 @@ async fn get_questions(
             }
         }
     } else {
-        let res: Vec<Question> = store.questions.values().cloned().collect();
+        let res: Vec<Question> = store.questions.read().await.values().cloned().collect();
         Ok(Json(res))
     }
 }
 
 #[derive(Clone)]
 struct Store {
-    questions: HashMap<QuestionId, Question>,
+    questions: Arc<RwLock<HashMap<QuestionId, Question>>>,
 }
 
 impl Store {
     fn new() -> Self {
         Store {
-            questions: Self::init(),
+            questions: Arc::new(RwLock::new(Self::init())),
         }
     }
 
@@ -75,7 +76,7 @@ impl Store {
         let file = include_str!("../questions.json");
         serde_json::from_str(file).expect("Can't read questions.json")
     }
-
+/*
     fn add_question(mut self, question: Question) -> Self {
         self.questions.insert(question.id.clone(), question);
         self
@@ -93,6 +94,7 @@ impl Store {
             eprintln!("{}", v.content);
         }
     }
+*/
 }
 
 #[derive(Debug, Deserialize)]
