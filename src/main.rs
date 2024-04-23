@@ -49,12 +49,11 @@ struct AnswerId(String);
 async fn get_questions(
     Extension(store): Extension<Arc<Store>>,
     query: Query<QuestionQuery>
-) -> Result<Json<Vec<Question>>, StatusCode> {
+) -> Result<Json<Vec<Question>>, Error> {
 
     if query.start.is_some() && query.end.is_some() {
         match extract_pagination(query) {
             Ok(pagination) => {
-                eprintln!("Pagination: start = {}, end = {}", pagination.start, pagination.end);
                 let res: Vec<Question> = store.questions.read().await.values()
                     .skip(pagination.start)
                     .take(pagination.end - pagination.start)
@@ -63,8 +62,7 @@ async fn get_questions(
                 Ok(Json(res))
             },
             Err(err) => {
-                eprintln!("Error extracting pagination: {}", err);
-                Err(StatusCode::BAD_REQUEST)
+                Err(err)
             }
         }
     } else {
@@ -133,7 +131,7 @@ async fn add_answer(
         store.answers.write().await.insert(answer.id.clone(), answer);
         let response = Response::builder()
             .status(StatusCode::OK)
-            .body(Body::from("Question added"))
+            .body(Body::from("Answer added"))
             .unwrap();
 
         Ok(response)
