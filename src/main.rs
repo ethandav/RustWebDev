@@ -36,20 +36,27 @@ async fn get_questions(
     Extension(store): Extension<Arc<Store>>,
     query: Query<QuestionQuery>
 ) -> Result<Json<Vec<Question>>, StatusCode> {
-    eprintln!("{:?}", query);
 
-    match &query.start {
-        Some(start) => eprintln!("Start value: {}", start),
-        None => eprintln!("No start value"),
+    if query.start.is_some() && query.end.is_some() {
+        match extract_pagination(query) {
+            Ok(pagination) => {
+                eprintln!("Pagination: start = {}, end = {}", pagination.start, pagination.end);
+                let res: Vec<Question> = store.questions.values()
+                    .skip(pagination.start)
+                    .take(pagination.end - pagination.start)
+                    .cloned()
+                    .collect();
+                Ok(Json(res))
+            },
+            Err(err) => {
+                eprintln!("Error extracting pagination: {}", err);
+                Err(StatusCode::BAD_REQUEST)
+            }
+        }
+    } else {
+        let res: Vec<Question> = store.questions.values().cloned().collect();
+        Ok(Json(res))
     }
-
-    match &query.end {
-        Some(end) => eprintln!("End value: {}", end),
-        None => eprintln!("No end value"),
-    }
-
-    let res: Vec<Question> = store.questions.values().cloned().collect();
-    Ok(Json(res))
 }
 
 #[derive(Clone)]
@@ -92,6 +99,45 @@ impl Store {
 struct QuestionQuery {
     start: Option<String>,
     end: Option<String>
+}
+
+#[derive(Debug)]
+enum Error {
+    ParseError(std::num::ParseIntError),
+    MissingParameters,
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match *self {
+            Error::ParseError(ref err) => {
+                write!(f, "Cannot parse parameter: {}", err)
+            },
+            Error::MissingParameters => write!(f, "Missing parameter"),
+        }
+    }
+}
+
+#[derive(Debug)]
+struct Pagination {
+    start: usize,
+    end: usize,
+}
+
+fn extract_pagination(
+    query: Query<QuestionQuery>
+) -> Result<Pagination, Error> {
+    if let (Some(start), Some(end)) = (&query.start, &query.end) {
+        let start_parsed = start.parse::<usize>().map_err(Error::ParseError)?;
+        let end_parsed = end.parse::<usize>().map_err(Error::ParseError)?;
+
+        Ok(Pagination {
+            start: start_parsed,
+            end: end_parsed,
+        })
+    } else {
+        Err(Error::MissingParameters)
+    }
 }
 
 #[tokio::main]
