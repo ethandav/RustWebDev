@@ -35,6 +35,16 @@ struct Question {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct QuestionId(String);
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct Answer {
+    id: AnswerId,
+    content: String,
+    question_id: QuestionId,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
+struct AnswerId(String);
+
 async fn get_questions(
     Extension(store): Extension<Arc<Store>>,
     query: Query<QuestionQuery>
@@ -112,12 +122,14 @@ async fn delete_question(
 #[derive(Clone)]
 struct Store {
     questions: Arc<RwLock<HashMap<QuestionId, Question>>>,
+    answers: Arc<RwLock<HashMap<AnswerId, Answer>>>,
 }
 
 impl Store {
     fn new() -> Self {
         Store {
             questions: Arc::new(RwLock::new(Self::init())),
+            answers: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
