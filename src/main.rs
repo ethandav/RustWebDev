@@ -4,7 +4,6 @@ use axum::{
     routing::get,
     routing::post,
     Router,
-    extract::Path,
     extract::Extension,
     extract::Query,
     Json,
@@ -12,11 +11,9 @@ use axum::{
 };
 use serde::{Deserialize, Serialize };
 use std::{
-    str::FromStr,
     net::SocketAddr,
     net::IpAddr,
     net::Ipv4Addr,
-    io,
     sync::Arc
 };
 use tower_http::cors::{CorsLayer, AllowOrigin, AllowMethods};
@@ -91,25 +88,6 @@ impl Store {
         let file = include_str!("../questions.json");
         serde_json::from_str(file).expect("Can't read questions.json")
     }
-/*
-    fn add_question(mut self, question: Question) -> Self {
-        self.questions.insert(question.id.clone(), question);
-        self
-    }
-
-    fn show_question(self) {
-        for(key ,value) in self.questions.into_iter() {
-            println!("{}", value.content)
-        }
-    }
-
-    async fn get_question(self, Path(question_id): Path<String>) {
-        let question = self.questions.get(&QuestionId(question_id));
-        if let Some(v) = question {
-            eprintln!("{}", v.content);
-        }
-    }
-*/
 }
 
 #[derive(Debug, Deserialize)]
