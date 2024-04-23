@@ -37,6 +37,17 @@ async fn get_questions(
     query: Query<QuestionQuery>
 ) -> Result<Json<Vec<Question>>, StatusCode> {
     eprintln!("{:?}", query);
+
+    match &query.start {
+        Some(start) => eprintln!("Start value: {}", start),
+        None => eprintln!("No start value"),
+    }
+
+    match &query.end {
+        Some(end) => eprintln!("End value: {}", end),
+        None => eprintln!("No end value"),
+    }
+
     let res: Vec<Question> = store.questions.values().cloned().collect();
     Ok(Json(res))
 }
@@ -79,7 +90,8 @@ impl Store {
 
 #[derive(Debug, Deserialize)]
 struct QuestionQuery {
-    tag: Option<String>,
+    start: Option<String>,
+    end: Option<String>
 }
 
 #[tokio::main]
