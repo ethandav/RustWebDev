@@ -4,6 +4,7 @@ use axum::{
     routing::get,
     routing::post,
     routing::put,
+    routing::delete,
     Router,
     extract::Extension,
     extract::Query,
@@ -89,6 +90,23 @@ async fn update_question(
         .unwrap();
 
     Ok(response)
+}
+
+async fn delete_question(
+    Extension(store): Extension<Arc<Store>>,
+    Path(id): Path<String>,
+) -> Result<impl IntoResponse, Error> {
+    match store.questions.write().await.remove(&QuestionId(id)) {
+        Some(_) => {
+            let response = Response::builder()
+                .status(StatusCode::OK)
+                .body(Body::from("Question deleted"))
+                .unwrap();
+            Ok(response)
+        },
+        None => Err(Error::QuestionNotFound)
+    }
+
 }
 
 #[derive(Clone)]
@@ -182,6 +200,7 @@ async fn main() {
         .route("/questions", get(get_questions))
         .route("/questions", post(add_question))
         .route("/questions/:id", put(update_question))
+        .route("/questions/:id", delete(delete_question))
         .layer(
             CorsLayer::new()
                 .allow_origin(AllowOrigin::any())
