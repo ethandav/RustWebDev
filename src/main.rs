@@ -1,12 +1,14 @@
 use axum::{
-    http::StatusCode,
+    http::{StatusCode, Response},
     response::IntoResponse,
     routing::get,
+    routing::post,
     Router,
     extract::Path,
     extract::Extension,
     extract::Query,
     Json,
+    body::Body,
 };
 use serde::{Deserialize, Serialize };
 use std::{
@@ -58,6 +60,19 @@ async fn get_questions(
         let res: Vec<Question> = store.questions.read().await.values().cloned().collect();
         Ok(Json(res))
     }
+}
+
+async fn add_question(
+    Extension(store): Extension<Arc<Store>>,
+    Json(question): Json<Question>
+) -> Result<impl IntoResponse, StatusCode> {
+    store.questions.write().await.insert(question.id.clone(), question);
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .body(Body::from("Question added"))
+        .unwrap();
+
+    Ok(response)
 }
 
 #[derive(Clone)]
@@ -152,6 +167,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/questions", get(get_questions))
+        .route("/questions", post(add_question))
         .layer(
             CorsLayer::new()
                 .allow_origin(AllowOrigin::any())
