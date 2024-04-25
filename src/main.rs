@@ -14,6 +14,7 @@ use axum::{
     extract::Extension,
     extract::Query,
     body::Body,
+    Json,
 };
 
 use std::{
@@ -45,8 +46,21 @@ impl Store {
         let file = include_str!("../questions.json");
         serde_json::from_str(file).expect("Can't read questions.json")
     }
+
+    pub async fn get_random(&self) -> Result<Question, StatusCode> {
+        let questions = self.questions.read().await.clone();
+        let(_, question) = fastrand::choice(questions.iter())
+            .ok_or(StatusCode::BAD_REQUEST)?;
+        Ok(question.to_owned())
+    }
 }
 
+async fn index_handler(
+    Extension(store): Extension<Arc<Store>>
+) -> Result<Json<Question>, StatusCode> {
+    let question = store.get_random();
+    Ok(Json(question.await.unwrap()))
+}
 
 #[derive(Debug)]
 enum Error {
@@ -116,6 +130,7 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(ip).await.unwrap();
 
     let app = Router::new()
+        .route("/", get(index_handler))
         .route("/questions", get(get_questions))
         .route("/questions", post(add_question))
         .route("/questions/:id", put(update_question))
