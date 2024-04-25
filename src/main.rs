@@ -1,8 +1,7 @@
-mod questions;
-use questions::*;
+mod routes;
 
-mod answers;
-use answers::*;
+use crate::routes::questions::*;
+use crate::routes::answers::*;
 
 use axum::{
     http::{StatusCode, Response},
