@@ -22,13 +22,15 @@ use std::{
     net::Ipv4Addr,
     sync::Arc
 };
-use tower_http::cors::{CorsLayer, AllowOrigin, AllowMethods};
+use tower_http::{cors::{CorsLayer, AllowOrigin, AllowMethods}, services};
 use http::HeaderName;
 use std::collections::HashMap;
 use tokio::sync::RwLock;
 
 mod web;
 use crate::web::*;
+
+const STYLESHEET: &str = "assets/static/questions.css";
 
 #[derive(Clone)]
 struct Store {
@@ -124,6 +126,9 @@ async fn main() {
     eprintln!("Questions server: serving at {}", ip);
     let listener = tokio::net::TcpListener::bind(ip).await.unwrap();
 
+    let mime_type = core::str::FromStr::from_str("text/css").unwrap();
+    let stylesheet = services::ServeFile::new_with_mime(STYLESHEET, &mime_type);
+
     let app = Router::new()
         .route("/", get(index_handler))
         .route("/questions", get(get_questions))
@@ -131,6 +136,7 @@ async fn main() {
         .route("/questions/:id", put(update_question))
         .route("/questions/:id", delete(delete_question))
         .route("/answers", post(add_answer))
+        .route_service("/questions.css", stylesheet)
         .layer(
             CorsLayer::new()
                 .allow_origin(AllowOrigin::any())
