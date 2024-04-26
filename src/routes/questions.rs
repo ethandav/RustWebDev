@@ -13,10 +13,10 @@ use crate::{Error, Store, extract_pagination};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Question {
-    id: QuestionId,
-    title: String,
-    content: String,
-    tags: Option<Vec<String>>,
+    pub id: QuestionId,
+    pub title: String,
+    pub content: String,
+    pub tags: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize)]

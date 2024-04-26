@@ -4,8 +4,8 @@ use crate::routes::questions::*;
 use crate::routes::answers::*;
 
 use axum::{
-    http::{StatusCode, Response},
-    response::IntoResponse,
+    http::StatusCode,
+    response::{IntoResponse, Response},
     routing::get,
     routing::post,
     routing::put,
@@ -14,7 +14,6 @@ use axum::{
     extract::Extension,
     extract::Query,
     body::Body,
-    Json,
 };
 
 use std::{
@@ -27,6 +26,9 @@ use tower_http::cors::{CorsLayer, AllowOrigin, AllowMethods};
 use http::HeaderName;
 use std::collections::HashMap;
 use tokio::sync::RwLock;
+
+mod web;
+use crate::web::*;
 
 #[derive(Clone)]
 struct Store {
@@ -53,13 +55,6 @@ impl Store {
             .ok_or(StatusCode::BAD_REQUEST)?;
         Ok(question.to_owned())
     }
-}
-
-async fn index_handler(
-    Extension(store): Extension<Arc<Store>>
-) -> Result<Json<Question>, StatusCode> {
-    let question = store.get_random();
-    Ok(Json(question.await.unwrap()))
 }
 
 #[derive(Debug)]
