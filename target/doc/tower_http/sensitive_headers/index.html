@@ -1,0 +1,60 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Middlewares that mark headers as sensitive."><title>tower_http::sensitive_headers - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="tower_http" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../tower_http/index.html">tower_http</a><span class="version">0.5.2</span></h2></div><h2 class="location"><a href="#">Module sensitive_headers</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li><li><a href="#types">Type Aliases</a></li></ul></section><h2><a href="../index.html">In crate tower_http</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../tower_http/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../index.html">tower_http</a>::<wbr><a class="mod" href="#">sensitive_headers</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../src/tower_http/sensitive_headers.rs.html#1-448">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Middlewares that mark headers as <a href="https://docs.rs/http/latest/http/header/struct.HeaderValue.html#method.set_sensitive">sensitive</a>.</p>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>tower_http::sensitive_headers::SetSensitiveHeadersLayer;
+<span class="kw">use </span>tower::{Service, ServiceExt, ServiceBuilder, service_fn};
+<span class="kw">use </span>http::{Request, Response, header::AUTHORIZATION};
+<span class="kw">use </span>http_body_util::Full;
+<span class="kw">use </span>bytes::Bytes;
+<span class="kw">use </span>std::{iter::once, convert::Infallible};
+
+<span class="kw">async fn </span>handle(req: Request&lt;Full&lt;Bytes&gt;&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Full&lt;Bytes&gt;&gt;, Infallible&gt; {
+    <span class="comment">// ...
+</span>}
+
+<span class="kw">let </span><span class="kw-2">mut </span>service = ServiceBuilder::new()
+    <span class="comment">// Mark the `Authorization` header as sensitive so it doesn't show in logs
+    //
+    // `SetSensitiveHeadersLayer` will mark the header as sensitive on both the
+    // request and response.
+    //
+    // The middleware is constructed from an iterator of headers to easily mark
+    // multiple headers at once.
+    </span>.layer(SetSensitiveHeadersLayer::new(once(AUTHORIZATION)))
+    .service(service_fn(handle));
+
+<span class="comment">// Call the service.
+</span><span class="kw">let </span>response = service
+    .ready()
+    .<span class="kw">await</span><span class="question-mark">?
+    </span>.call(Request::new(Full::default()))
+    .<span class="kw">await</span><span class="question-mark">?</span>;</code></pre></div>
+<p>Its important to think about the order in which requests and responses arrive at your
+middleware. For example to hide headers both on requests and responses when using
+<a href="../trace/struct.TraceLayer.html" title="struct tower_http::trace::TraceLayer"><code>TraceLayer</code></a> you have to apply <a href="struct.SetSensitiveRequestHeadersLayer.html" title="struct tower_http::sensitive_headers::SetSensitiveRequestHeadersLayer"><code>SetSensitiveRequestHeadersLayer</code></a> before <a href="../trace/struct.TraceLayer.html" title="struct tower_http::trace::TraceLayer"><code>TraceLayer</code></a>
+and <a href="struct.SetSensitiveResponseHeadersLayer.html" title="struct tower_http::sensitive_headers::SetSensitiveResponseHeadersLayer"><code>SetSensitiveResponseHeadersLayer</code></a> afterwards.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>tower_http::{
+    trace::TraceLayer,
+    sensitive_headers::{
+        SetSensitiveRequestHeadersLayer,
+        SetSensitiveResponseHeadersLayer,
+    },
+};
+<span class="kw">use </span>tower::{Service, ServiceExt, ServiceBuilder, service_fn};
+<span class="kw">use </span>http::header;
+<span class="kw">use </span>std::sync::Arc;
+
+<span class="kw">let </span>headers: Arc&lt;[<span class="kw">_</span>]&gt; = Arc::new([
+    header::AUTHORIZATION,
+    header::PROXY_AUTHORIZATION,
+    header::COOKIE,
+    header::SET_COOKIE,
+]);
+
+<span class="kw">let </span>service = ServiceBuilder::new()
+    .layer(SetSensitiveRequestHeadersLayer::from_shared(Arc::clone(<span class="kw-2">&amp;</span>headers)))
+    .layer(TraceLayer::new_for_http())
+    .layer(SetSensitiveResponseHeadersLayer::from_shared(headers))
+    .service_fn(handle);</code></pre></div>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.SetSensitiveHeadersLayer.html" title="struct tower_http::sensitive_headers::SetSensitiveHeadersLayer">SetSensitiveHeadersLayer</a></div><div class="desc docblock-short">Mark headers as <a href="https://docs.rs/http/latest/http/header/struct.HeaderValue.html#method.set_sensitive">sensitive</a> on both requests and responses.</div></li><li><div class="item-name"><a class="struct" href="struct.SetSensitiveRequestHeaders.html" title="struct tower_http::sensitive_headers::SetSensitiveRequestHeaders">SetSensitiveRequestHeaders</a></div><div class="desc docblock-short">Mark request headers as <a href="https://docs.rs/http/latest/http/header/struct.HeaderValue.html#method.set_sensitive">sensitive</a>.</div></li><li><div class="item-name"><a class="struct" href="struct.SetSensitiveRequestHeadersLayer.html" title="struct tower_http::sensitive_headers::SetSensitiveRequestHeadersLayer">SetSensitiveRequestHeadersLayer</a></div><div class="desc docblock-short">Mark request headers as <a href="https://docs.rs/http/latest/http/header/struct.HeaderValue.html#method.set_sensitive">sensitive</a>.</div></li><li><div class="item-name"><a class="struct" href="struct.SetSensitiveResponseHeaders.html" title="struct tower_http::sensitive_headers::SetSensitiveResponseHeaders">SetSensitiveResponseHeaders</a></div><div class="desc docblock-short">Mark response headers as <a href="https://docs.rs/http/latest/http/header/struct.HeaderValue.html#method.set_sensitive">sensitive</a>.</div></li><li><div class="item-name"><a class="struct" href="struct.SetSensitiveResponseHeadersLayer.html" title="struct tower_http::sensitive_headers::SetSensitiveResponseHeadersLayer">SetSensitiveResponseHeadersLayer</a></div><div class="desc docblock-short">Mark response headers as <a href="https://docs.rs/http/latest/http/header/struct.HeaderValue.html#method.set_sensitive">sensitive</a>.</div></li><li><div class="item-name"><a class="struct" href="struct.SetSensitiveResponseHeadersResponseFuture.html" title="struct tower_http::sensitive_headers::SetSensitiveResponseHeadersResponseFuture">SetSensitiveResponseHeadersResponseFuture</a></div><div class="desc docblock-short">Response future for <a href="struct.SetSensitiveResponseHeaders.html" title="struct tower_http::sensitive_headers::SetSensitiveResponseHeaders"><code>SetSensitiveResponseHeaders</code></a>.</div></li></ul><h2 id="types" class="section-header">Type Aliases<a href="#types" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="type" href="type.SetSensitiveHeaders.html" title="type tower_http::sensitive_headers::SetSensitiveHeaders">SetSensitiveHeaders</a></div><div class="desc docblock-short">Mark headers as <a href="https://docs.rs/http/latest/http/header/struct.HeaderValue.html#method.set_sensitive">sensitive</a> on both requests and responses.</div></li></ul></section></div></main></body></html>

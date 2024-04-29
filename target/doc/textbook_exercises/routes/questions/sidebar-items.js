@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["add_question","delete_question","get_questions","update_question"],"struct":["Question","QuestionId","QuestionQuery"]};

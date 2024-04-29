@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"textbook_exercises":[["impl&lt;'a&gt; <a class=\"trait\" href=\"askama/trait.Template.html\" title=\"trait askama::Template\">Template</a> for <a class=\"struct\" href=\"textbook_exercises/web/struct.IndexTemplate.html\" title=\"struct textbook_exercises::web::IndexTemplate\">IndexTemplate</a>&lt;'a&gt;"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

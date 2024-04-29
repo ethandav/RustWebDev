@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["VarName"],"trait":["AssocVisitor","Context","ListVisitor","Visitor"]};

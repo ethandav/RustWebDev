@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["STYLESHEET"],"enum":["Error"],"fn":["extract_pagination","main","not_found"],"mod":["routes","web"],"struct":["Pagination","Store"]};

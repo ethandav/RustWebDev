@@ -1,0 +1,100 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Middleware for limiting request bodies."><title>tower_http::limit - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="tower_http" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../tower_http/index.html">tower_http</a><span class="version">0.5.2</span></h2></div><h2 class="location"><a href="#">Module limit</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li></ul></section><h2><a href="../index.html">In crate tower_http</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../tower_http/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../index.html">tower_http</a>::<wbr><a class="mod" href="#">limit</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../src/tower_http/limit/mod.rs.html#1-142">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Middleware for limiting request bodies.</p>
+<p>This layer will also intercept requests with a <code>Content-Length</code> header
+larger than the allowable limit and return an immediate error response
+before reading any of the body.</p>
+<p>Note that payload length errors can be used by adversaries in an attempt
+to smuggle requests. When an incoming stream is dropped due to an
+over-sized payload, servers should close the connection or resynchronize
+by optimistically consuming some data in an attempt to reach the end of
+the current HTTP frame. If the incoming stream cannot be resynchronized,
+then the connection should be closed. If you’re using <a href="https://crates.io/crates/hyper">hyper</a> this is
+automatically handled for you.</p>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2><h3 id="limiting-based-on-content-length"><a class="doc-anchor" href="#limiting-based-on-content-length">§</a>Limiting based on <code>Content-Length</code></h3>
+<p>If a <code>Content-Length</code> header is present and indicates a payload that is
+larger than the acceptable limit, then the underlying service will not
+be called and a <code>413 Payload Too Large</code> response will be generated.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bytes::Bytes;
+<span class="kw">use </span>std::convert::Infallible;
+<span class="kw">use </span>http::{Request, Response, StatusCode, HeaderValue, header::CONTENT_LENGTH};
+<span class="kw">use </span>http_body_util::{LengthLimitError};
+<span class="kw">use </span>tower::{Service, ServiceExt, ServiceBuilder};
+<span class="kw">use </span>tower_http::{body::Limited, limit::RequestBodyLimitLayer};
+<span class="kw">use </span>http_body_util::Full;
+
+<span class="kw">async fn </span>handle(req: Request&lt;Limited&lt;Full&lt;Bytes&gt;&gt;&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Full&lt;Bytes&gt;&gt;, Infallible&gt; {
+    <span class="macro">panic!</span>(<span class="string">"This should not be hit"</span>)
+}
+
+<span class="kw">let </span><span class="kw-2">mut </span>svc = ServiceBuilder::new()
+    <span class="comment">// Limit incoming requests to 4096 bytes.
+    </span>.layer(RequestBodyLimitLayer::new(<span class="number">4096</span>))
+    .service_fn(handle);
+
+<span class="comment">// Call the service with a header that indicates the body is too large.
+</span><span class="kw">let </span><span class="kw-2">mut </span>request = Request::builder()
+    .header(CONTENT_LENGTH, HeaderValue::from_static(<span class="string">"5000"</span>))
+    .body(Full::&lt;Bytes&gt;::default())
+    .unwrap();
+
+<span class="comment">// let response = svc.ready().await?.call(request).await?;
+</span><span class="kw">let </span>response = svc.call(request).<span class="kw">await</span><span class="question-mark">?</span>;
+
+<span class="macro">assert_eq!</span>(response.status(), StatusCode::PAYLOAD_TOO_LARGE);</code></pre></div>
+<h3 id="limiting-without-known-content-length"><a class="doc-anchor" href="#limiting-without-known-content-length">§</a>Limiting without known <code>Content-Length</code></h3>
+<p>If a <code>Content-Length</code> header is not present, then the body will be read
+until the configured limit has been reached. If the payload is larger than
+the limit, the <a href="../../http_body_util/limited/struct.Limited.html" title="struct http_body_util::limited::Limited"><code>http_body_util::Limited</code></a> body will return an error. This
+error can be inspected to determine if it is a <a href="../../http_body_util/limited/struct.LengthLimitError.html" title="struct http_body_util::limited::LengthLimitError"><code>http_body_util::LengthLimitError</code></a>
+and return an appropriate response in such case.</p>
+<p>Note that no error will be generated if the body is never read. Similarly,
+if the body <em>would be</em> to large, but is never consumed beyond the length
+limit, then no error is generated, and handling of the remaining incoming
+data stream is left to the server implementation as described above.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">async fn </span>handle(req: Request&lt;Limited&lt;Full&lt;Bytes&gt;&gt;&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Full&lt;Bytes&gt;&gt;, BoxError&gt; {
+    <span class="kw">let </span>data = <span class="kw">match </span>req.into_body().collect().<span class="kw">await </span>{
+        <span class="prelude-val">Ok</span>(collected) =&gt; collected.to_bytes(),
+        <span class="prelude-val">Err</span>(err) =&gt; {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw">_</span>) = err.downcast_ref::&lt;LengthLimitError&gt;() {
+                <span class="kw">let </span><span class="kw-2">mut </span>resp = Response::new(Full::default());
+                <span class="kw-2">*</span>resp.status_mut() = StatusCode::PAYLOAD_TOO_LARGE;
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(resp);
+            } <span class="kw">else </span>{
+                <span class="kw">return </span><span class="prelude-val">Err</span>(err);
+            }
+        }
+    };
+
+    <span class="prelude-val">Ok</span>(Response::new(Full::default()))
+}
+
+<span class="kw">let </span><span class="kw-2">mut </span>svc = ServiceBuilder::new()
+    <span class="comment">// Limit incoming requests to 4096 bytes.
+    </span>.layer(RequestBodyLimitLayer::new(<span class="number">4096</span>))
+    .service_fn(handle);
+
+<span class="comment">// Call the service.
+</span><span class="kw">let </span>request = Request::new(Full::&lt;Bytes&gt;::default());
+
+<span class="kw">let </span>response = svc.ready().<span class="kw">await</span><span class="question-mark">?</span>.call(request).<span class="kw">await</span><span class="question-mark">?</span>;
+
+<span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
+
+<span class="comment">// Call the service with a body that is too large.
+</span><span class="kw">let </span>request = Request::new(Full::&lt;Bytes&gt;::from(Bytes::from(<span class="macro">vec!</span>[<span class="number">0u8</span>; <span class="number">4097</span>])));
+
+<span class="kw">let </span>response = svc.ready().<span class="kw">await</span><span class="question-mark">?</span>.call(request).<span class="kw">await</span><span class="question-mark">?</span>;
+
+<span class="macro">assert_eq!</span>(response.status(), StatusCode::PAYLOAD_TOO_LARGE);</code></pre></div>
+<h3 id="limiting-without-content-length"><a class="doc-anchor" href="#limiting-without-content-length">§</a>Limiting without <code>Content-Length</code></h3>
+<p>If enforcement of body size limits is desired without preemptively
+handling requests with a <code>Content-Length</code> header indicating an over-sized
+request, consider using <a href="../map_request_body/index.html" title="mod tower_http::map_request_body"><code>MapRequestBody</code></a> to wrap the request body with
+<a href="../../http_body_util/limited/struct.Limited.html" title="struct http_body_util::limited::Limited"><code>http_body_util::Limited</code></a> and checking for <a href="../../http_body_util/limited/struct.LengthLimitError.html" title="struct http_body_util::limited::LengthLimitError"><code>http_body_util::LengthLimitError</code></a>
+like in the previous example.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.RequestBodyLimit.html" title="struct tower_http::limit::RequestBodyLimit">RequestBodyLimit</a></div><div class="desc docblock-short">Middleware that intercepts requests with body lengths greater than the
+configured limit and converts them into <code>413 Payload Too Large</code> responses.</div></li><li><div class="item-name"><a class="struct" href="struct.RequestBodyLimitLayer.html" title="struct tower_http::limit::RequestBodyLimitLayer">RequestBodyLimitLayer</a></div><div class="desc docblock-short">Layer that applies the <a href="struct.RequestBodyLimit.html" title="struct tower_http::limit::RequestBodyLimit"><code>RequestBodyLimit</code></a> middleware that intercepts requests
+with body lengths greater than the configured limit and converts them into
+<code>413 Payload Too Large</code> responses.</div></li><li><div class="item-name"><a class="struct" href="struct.ResponseBody.html" title="struct tower_http::limit::ResponseBody">ResponseBody</a></div><div class="desc docblock-short">Response body for <a href="struct.RequestBodyLimit.html" title="struct tower_http::limit::RequestBodyLimit"><code>RequestBodyLimit</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.ResponseFuture.html" title="struct tower_http::limit::ResponseFuture">ResponseFuture</a></div><div class="desc docblock-short">Response future for <a href="struct.RequestBodyLimit.html" title="struct tower_http::limit::RequestBodyLimit"><code>RequestBodyLimit</code></a>.</div></li></ul></section></div></main></body></html>
