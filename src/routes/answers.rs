@@ -8,7 +8,7 @@ use axum::{
 use serde::{Deserialize, Serialize };
 use std::sync::Arc;
 use crate::{Error, Store, QuestionId};
-
+use crate::routes::questions::parse_id;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Answer {
@@ -35,7 +35,7 @@ pub async fn add_answer(
         let answer = Answer {
             id: AnswerId("1".to_string()),
             content: content.to_string(),
-            question_id: QuestionId(question_id.to_string()),
+            question_id: QuestionId(parse_id(question_id).unwrap()),
         };
         store.answers.write().await.insert(answer.id.clone(), answer);
         let response = Response::builder()

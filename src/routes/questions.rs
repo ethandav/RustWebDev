@@ -7,9 +7,11 @@ use axum::{
     Json,
     body::Body,
 };
-use serde::{Deserialize, Serialize };
+use serde::{Deserialize, Deserializer, Serialize};
+use serde::de::{self, Visitor};
 use std::sync::Arc;
 use crate::{Error, Store, extract_pagination};
+use std::fmt;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Question {
@@ -25,8 +27,34 @@ pub struct QuestionQuery {
     pub end: Option<String>
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
-pub struct QuestionId(pub String);
+#[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
+pub struct QuestionId(pub i32);
+
+struct QuestionIdVisitor;
+
+impl<'de> Visitor<'de> for QuestionIdVisitor {
+    type Value = QuestionId;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a string representing a u32")
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        value.parse::<i32>().map(QuestionId).map_err(de::Error::custom)
+    }
+}
+
+impl<'de> Deserialize<'de> for QuestionId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_str(QuestionIdVisitor)
+    }
+}
 
 pub async fn get_questions(
     Extension(store): Extension<Arc<Store>>,
@@ -68,9 +96,10 @@ pub async fn add_question(
 
 pub async fn update_question(
     Extension(store): Extension<Arc<Store>>,
-    Path(id): Path<String>,
+    Path(id_str): Path<String>,
     Json(question): Json<Question>
 ) -> Result<impl IntoResponse, Error> {
+    let id = parse_id(&id_str).unwrap();
     match store.questions.write().await.get_mut(&QuestionId(id)) {
         Some(q) => *q = question,
         None => return Err(Error::QuestionNotFound)
@@ -85,8 +114,9 @@ pub async fn update_question(
 
 pub async fn delete_question(
     Extension(store): Extension<Arc<Store>>,
-    Path(id): Path<String>,
+    Path(id_str): Path<String>,
 ) -> Result<impl IntoResponse, Error> {
+    let id = parse_id(&id_str).unwrap();
     match store.questions.write().await.remove(&QuestionId(id)) {
         Some(_) => {
             let response = Response::builder()
@@ -96,5 +126,12 @@ pub async fn delete_question(
             Ok(response)
         },
         None => Err(Error::QuestionNotFound)
+    }
+}
+
+pub fn parse_id(id_str: &str) -> Result<i32, String> {
+    match id_str.parse::<i32>() {
+        Ok(num) => Ok(num),
+        Err(_) => Err(format!("Failed to parse ID from the URL: {}", id_str)),
     }
 }
