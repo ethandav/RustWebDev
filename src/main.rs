@@ -16,6 +16,9 @@ use axum::{
     body::Body,
 };
 
+use sqlx::postgres::{PgPoolOptions, PgPool, PgRow};
+use sqlx::Row;
+
 use std::{
     net::SocketAddr,
     net::IpAddr,
@@ -31,6 +34,26 @@ mod web;
 use crate::web::*;
 
 const STYLESHEET: &str = "assets/static/questions.css";
+
+#[derive(Clone)]
+pub struct Test_db {
+    pub connection: PgPool,
+}
+
+impl Test_db {
+    pub async fn new(db_url: &str) -> Self {
+        let db_pool = match PgPoolOptions::new()
+            .max_connections(5)
+            .connect(db_url).await {
+                Ok(pool) => pool,
+                Err(e) => panic!("Could not establish db connection: {}", e)
+        };
+
+        Test_db {
+            connection: db_pool,
+        }
+    }
+}
 
 #[derive(Clone)]
 struct Store {
@@ -121,6 +144,8 @@ async fn not_found() -> impl IntoResponse {
 #[tokio::main]
 async fn main() {
     let store = Arc::new(Store::new());
+
+    let test_db = Test_db::new("postgres://ethandav:goaskalice@127.0.0.1:3030/questions").await;
 
     let ip = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 3000);
     eprintln!("Questions server: serving at {}", ip);
