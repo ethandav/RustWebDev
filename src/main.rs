@@ -16,8 +16,8 @@ use axum::{
     body::Body,
 };
 
-use sqlx::postgres::{PgPoolOptions, PgPool, PgRow};
-use sqlx::Row;
+use sqlx::postgres::{PgPoolOptions, PgPool, /*PgRow*/};
+//use sqlx::Row;
 
 use std::{
     net::SocketAddr,
@@ -54,6 +54,7 @@ impl TestDb {
         }
     }
 
+    /*
     async fn get_questions (
         &self,
         //limit: Option<u32>,
@@ -74,6 +75,7 @@ impl TestDb {
                 }
             }
     }
+    */
 
 }
 
@@ -109,7 +111,7 @@ enum Error {
     Parse(std::num::ParseIntError),
     MissingParameters,
     QuestionNotFound,
-    DatabaseQuery,
+    //DatabaseQuery,
 }
 
 impl std::fmt::Display for Error {
@@ -120,7 +122,7 @@ impl std::fmt::Display for Error {
             },
             Error::MissingParameters => write!(f, "Missing parameter"),
             Error::QuestionNotFound => write!(f, "Question not found"),
-            Error::DatabaseQuery => write!(f, "Error querying database"),
+            //Error::DatabaseQuery => write!(f, "Error querying database"),
         }
     }
 }
@@ -131,7 +133,7 @@ impl IntoResponse for Error {
             Error::Parse(_) => (StatusCode::BAD_REQUEST, "Invalid parameters"),
             Error::MissingParameters => (StatusCode::BAD_REQUEST, "Missing parameters"),
             Error::QuestionNotFound => (StatusCode::NOT_FOUND, "Question not found"),
-            Error::DatabaseQuery => (StatusCode::BAD_REQUEST, "Error querying database.")
+            //Error::DatabaseQuery => (StatusCode::BAD_REQUEST, "Error querying database.")
         };
         Response::builder()
             .status(status)
@@ -170,9 +172,9 @@ async fn not_found() -> impl IntoResponse {
 async fn main() {
     let store = Arc::new(Store::new());
 
-    let test_db = TestDb::new("postgres://ethandav:goaskalice@127.0.0.1:3030/questions").await;
-    let test_query = test_db.get_questions().await;
-    eprintln!("{:?}", test_query);
+    //let test_db = TestDb::new("postgres://ethandav:goaskalice@127.0.0.1:3030/questions").await;
+    //let test_query = test_db.get_questions().await;
+    //eprintln!("{:?}", test_query);
 
     let ip = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 3000);
     eprintln!("Questions server: serving at {}", ip);
