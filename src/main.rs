@@ -18,19 +18,14 @@ use axum::{
     body::Body,
 };
 
-use sqlx::postgres::{PgPoolOptions, PgPool, PgRow};
-use sqlx::Row;
-
 use std::{
     net::SocketAddr,
     net::IpAddr,
     net::Ipv4Addr,
     sync::Arc
 };
-use std::collections::HashSet;
 use tower_http::{cors::{CorsLayer, AllowOrigin, AllowMethods}, services};
 use http::HeaderName;
-use std::collections::HashMap;
 use tokio::sync::RwLock;
 
 mod web;
@@ -124,7 +119,10 @@ async fn main() {
         .route("/questions", post(add_question))
         .route("/questions/:id", put(update_question))
         .route("/questions/:id", delete(delete_question))
-        //.route("/answers", post(add_answer))
+        .route("/answers", get(answers_index))
+        .route("/answers", post(add_answer))
+        .route("/answers/:id", put(update_answer))
+        .route("/answers/:id", delete(delete_answer))
         .route_service("/questions.css", stylesheet)
         .layer(
             CorsLayer::new()

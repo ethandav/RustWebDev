@@ -3,6 +3,8 @@ use sqlx::postgres::{PgPoolOptions, PgPool, PgRow};
 use sqlx::Row;
 use sqlx::Pool;
 use crate::Error;
+use crate::Answer;
+use crate::AnswerId;
 
 #[derive(Clone)]
 pub struct Store {
@@ -96,8 +98,67 @@ impl Store {
 
     pub async fn delete(&mut self, index: &i32) -> Result<(), sqlx::Error> {
         let mut tx = Pool::begin(&self.connection).await?;
-        let q = sqlx::query(r#"DELETE FROM questions WHERE id = $1;"#)
-            .bind(index)
+        let q = sqlx::query(r#"DELETE FROM questions WHERE id = $1;"#);
+        q.bind(index)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await
+    }
+
+    pub async fn get_answers (
+        &self,
+        //limit: Option<u32>,
+        //offset: u32
+    ) -> Result<Vec<Answer>, Error> {
+        match sqlx::query("select * from answers")
+            .map(|row: PgRow| Answer {
+                id: AnswerId(row.get("id")),
+                content: row.get("content"),
+                question_id: QuestionId(row.get("corresponding_question")),
+            })
+            .fetch_all(&self.connection)
+            .await {
+                Ok(answers) => Ok(answers),
+                Err(_) => {
+                    Err(Error::DatabaseQuery)
+                }
+            }
+    }
+
+    pub async fn add_answer(&mut self, answer: Answer) -> Result<(), sqlx::Error> {
+        let mut tx = Pool::begin(&self.connection).await?;
+        sqlx::query(
+            r#"INSERT INTO answers
+            (id, content, corresponding_question)
+            VALUES ($1, $2, $3);"#,
+        )
+        .bind(answer.id.0)
+        .bind(&answer.content)
+        .bind(answer.question_id.0)
+        .execute(&mut *tx)
+        .await?;
+        tx.commit().await
+    }
+
+    pub async fn update_answer(&mut self, index: &i32, answer: Answer) -> Result<(), sqlx::Error> {
+        let mut tx = Pool::begin(&self.connection).await?;
+        let q = sqlx::query(
+            r#"UPDATE answers SET
+            content = $2, corresponding_question = $3
+            WHERE id = $1;"#
+        );
+        q.bind(index)
+            .bind(&answer.content)
+            .bind(answer.question_id.0)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await
+    }
+
+    pub async fn delete_answer(&mut self, index: &i32) -> Result<(), sqlx::Error> {
+        let mut tx = Pool::begin(&self.connection).await?;
+        let q = sqlx::query(r#"DELETE FROM answers WHERE id = $1;"#);
+        q.bind(index)
             .execute(&mut *tx)
             .await?;
         tx.commit().await

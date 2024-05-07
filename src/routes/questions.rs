@@ -2,7 +2,6 @@ use axum::{
     http::{StatusCode, Response},
     response::IntoResponse,
     extract::Extension,
-    extract::Query,
     extract::Path,
     Json,
     body::Body,
@@ -10,10 +9,9 @@ use axum::{
 use serde::{Deserialize, Deserializer, Serialize};
 use serde::de::{self, Visitor};
 use std::sync::Arc;
-use crate::{Error, Store, extract_pagination};
+use crate::Store;
 use std::fmt;
 use tokio::sync::RwLock;
-use crate::QuestionsTemplate;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Question {
@@ -51,7 +49,6 @@ impl<'de> Visitor<'de> for QuestionIdVisitor {
 
 impl fmt::Display for QuestionId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // Output the inner integer
         write!(f, "{}", self.0)
     }
 }
@@ -156,42 +153,8 @@ pub async fn get_questions(
         Ok(Json(res))
     }
 }
-
-pub async fn update_question(
-    Extension(store): Extension<Arc<Store>>,
-    Path(id_str): Path<String>,
-    Json(question): Json<Question>
-) -> Result<impl IntoResponse, Error> {
-    let id = parse_id(&id_str).unwrap();
-    match store.questions.write().await.get_mut(&QuestionId(id)) {
-        Some(q) => *q = question,
-        None => return Err(Error::QuestionNotFound)
-    }
-    let response = Response::builder()
-        .status(StatusCode::OK)
-        .body(Body::from("Question updated"))
-        .unwrap();
-
-    Ok(response)
-}
-
-pub async fn delete_question(
-    Extension(store): Extension<Arc<Store>>,
-    Path(id_str): Path<String>,
-) -> Result<impl IntoResponse, Error> {
-    let id = parse_id(&id_str).unwrap();
-    match store.questions.write().await.remove(&QuestionId(id)) {
-        Some(_) => {
-            let response = Response::builder()
-                .status(StatusCode::OK)
-                .body(Body::from("Question deleted"))
-                .unwrap();
-            Ok(response)
-        },
-        None => Err(Error::QuestionNotFound)
-    }
-}
 */
+
 pub fn parse_id(id_str: &str) -> Result<i32, String> {
     match id_str.parse::<i32>() {
         Ok(num) => Ok(num),

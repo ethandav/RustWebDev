@@ -1,6 +1,5 @@
 use crate::*;
 use askama::Template;
-use sqlx::types::Json;
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -34,12 +33,38 @@ impl<'a> QuestionsTemplate<'a> {
     }
 }
 
+#[derive(Template)]
+#[template(path = "answers.html")]
+pub struct AnswersTemplate<'a> {
+    answers: &'a Vec<Answer>,
+    stylesheet: &'static str,
+}
+
+impl<'a> AnswersTemplate<'a> {
+    fn new(answers: &'a Vec<Answer>) -> Self {
+        Self {
+            answers,
+            stylesheet: "/questions.css",
+        }
+    }
+}
+
 pub async fn questions_index(
     Extension(store): Extension<Arc<RwLock<Store>>>
 ) -> Response {
     let questions = store.read().await.get_questions().await;
     match &questions {
         Ok(question) => (StatusCode::OK, QuestionsTemplate::new(question)).into_response(),
+        Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
+    }
+}
+
+pub async fn answers_index(
+    Extension(store): Extension<Arc<RwLock<Store>>>
+) -> Response {
+    let answers = store.read().await.get_answers().await;
+    match &answers {
+        Ok(answer) => (StatusCode::OK, AnswersTemplate::new(answer)).into_response(),
         Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
     }
 }

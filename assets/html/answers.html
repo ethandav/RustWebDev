@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="{{stylesheet}}">
+    </head>
+    <body>
+        {% block content %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Content</th>
+                    <th>Question ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for answer in answers %}
+                <tr>
+                    <td>{{ answer.id }}</td>
+                    <td>{{ answer.content }}</td>
+                    <td>{{ answer.question_id }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    </body>
