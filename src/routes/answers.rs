@@ -2,49 +2,121 @@ use axum::{
     http::{StatusCode, Response},
     response::IntoResponse,
     extract::Extension,
-    extract::Form,
+    extract::Path,
+    Json,
     body::Body,
 };
-use serde::{Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
+use serde::de::{self, Visitor};
 use std::sync::Arc;
-use crate::{Error, Store, QuestionId};
-use crate::routes::questions::parse_id;
+use crate::Store;
+use std::fmt;
+use tokio::sync::RwLock;
+use crate::QuestionId;
+use crate::parse_id;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Answer {
-    id: AnswerId,
-    content: String,
-    question_id: QuestionId,
+    pub id: AnswerId,
+    pub content: String,
+    pub question_id: QuestionId,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
-pub struct AnswerId(String);
+pub struct AnswerId(pub i32);
 
-#[derive(Debug, Deserialize)]
-pub struct AnswerForm {
-    content: Option<String>,
-    question_id: Option<String>,
+struct AnswerIdVisitor;
+
+impl<'de> Visitor<'de> for AnswerIdVisitor {
+    type Value = AnswerId;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a string representing a u32")
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        value.parse::<i32>().map(AnswerId).map_err(de::Error::custom)
+    }
 }
 
-pub async fn add_answer(
-    Extension(store): Extension<Arc<Store>>,
-    Form(form): Form<AnswerForm>
-) -> Result<impl IntoResponse, Error> {
-    eprintln!("Content: {:?}", form);
-    if let (Some(content), Some(question_id)) = (&form.content, &form.question_id) {
-        let answer = Answer {
-            id: AnswerId("1".to_string()),
-            content: content.to_string(),
-            question_id: QuestionId(parse_id(question_id).unwrap()),
-        };
-        store.answers.write().await.insert(answer.id.clone(), answer);
-        let response = Response::builder()
-            .status(StatusCode::OK)
-            .body(Body::from("Answer added"))
-            .unwrap();
+impl fmt::Display for AnswerId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
-        Ok(response)
-    } else {
-        Err(Error::MissingParameters)
+//TODO: Use forms to create answers
+/*#[derive(Debug, Deserialize)]
+pub struct AnswerForm {
+    pubcontent: Option<String>,
+    question_id: Option<String>,
+}*/
+
+pub async fn add_answer(
+    Extension(store): Extension<Arc<RwLock<Store>>>,
+    Json(answer): Json<Answer>
+) -> Result<impl IntoResponse, StatusCode> {
+    let mut store = store.write().await;
+    match store.add_answer(answer).await {
+        Ok(_) => {
+            let response = Response::builder()
+                .status(StatusCode::CREATED)
+                .body(Body::from("Question added"))
+                .unwrap();
+
+            Ok(response)
+        },
+        Err(e) => {
+            eprintln!("Failed to add question: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+pub async fn update_answer(
+    Extension(store): Extension<Arc<RwLock<Store>>>,
+    Path(id_str): Path<String>,
+    Json(answer): Json<Answer>
+) -> Result<impl IntoResponse, StatusCode> {
+    let id = parse_id(&id_str).unwrap();
+    let mut store = store.write().await;
+    match store.update_answer(&id, answer).await {
+        Ok(_) => {
+            let response = Response::builder()
+                .status(StatusCode::CREATED)
+                .body(Body::from("Question Updated"))
+                .unwrap();
+
+            Ok(response)
+        },
+        Err(e) => {
+            eprintln!("Failed to Update question: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+pub async fn delete_answer(
+    Extension(store): Extension<Arc<RwLock<Store>>>,
+    Path(id_str): Path<String>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let id = parse_id(&id_str).unwrap();
+    let mut store = store.write().await;
+    match store.delete_answer(&id).await {
+        Ok(_) => {
+            let response = Response::builder()
+                .status(StatusCode::CREATED)
+                .body(Body::from("Question Deleted"))
+                .unwrap();
+
+            Ok(response)
+        },
+        Err(e) => {
+            eprintln!("Failed to Delete question: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
     }
 }
