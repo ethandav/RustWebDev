@@ -109,6 +109,28 @@ pub async fn update_question(
     }
 }
 
+pub async fn delete_question(
+    Extension(store): Extension<Arc<RwLock<Store>>>,
+    Path(id_str): Path<String>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let id = parse_id(&id_str).unwrap();
+    let mut store = store.write().await;
+    match store.delete(&id).await {
+        Ok(_) => {
+            let response = Response::builder()
+                .status(StatusCode::CREATED)
+                .body(Body::from("Question Deleted"))
+                .unwrap();
+
+            Ok(response)
+        },
+        Err(e) => {
+            eprintln!("Failed to Delete question: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
 /*
 pub async fn get_questions(
     Extension(store): Extension<Arc<RwLock<Store>>>,

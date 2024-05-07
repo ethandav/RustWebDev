@@ -94,4 +94,13 @@ impl Store {
         tx.commit().await
     }
 
+    pub async fn delete(&mut self, index: &i32) -> Result<(), sqlx::Error> {
+        let mut tx = Pool::begin(&self.connection).await?;
+        let q = sqlx::query(r#"DELETE FROM questions WHERE id = $1;"#)
+            .bind(index)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await
+    }
+
 }

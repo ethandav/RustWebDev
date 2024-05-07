@@ -123,7 +123,7 @@ async fn main() {
         .route("/questions", get(questions_index))
         .route("/questions", post(add_question))
         .route("/questions/:id", put(update_question))
-        //.route("/questions/:id", delete(delete_question))
+        .route("/questions/:id", delete(delete_question))
         //.route("/answers", post(add_answer))
         .route_service("/questions.css", stylesheet)
         .layer(
