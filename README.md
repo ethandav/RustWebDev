@@ -21,7 +21,7 @@ curl --location --request DELETE 'localhost:3000/answers/1' --header 'Content-Ty
 curl --location --request PUT 'http://localhost:3000/answers/2' --header 'Content-Type: application/json' --data-raw '{"id":2,"title":"New Answer REDUX","content":"Google it, silly goose!","question_id":"1"}' 
 
 <h4>Add Question</h4>
-curl --location --request POST 'http://localhost:3000/questions' --header 'Content-Type: application/json' --data-raw '{"id":"3","title":"New Question","content":"How does this work again?","tags":["Rust","Webdev"]}'
+curl --location --request POST 'http://localhost:3000/questions' --header 'Content-Type: application/json' --data-raw '{"id":"2","title":"New Question","content":"How does this work again?","tags":["Rust","Webdev"]}'
 
 <h4>Delete Question</h4>
 curl --location --request DELETE 'localhost:3000/questions/3' --header 'Content-Type: application/json'
