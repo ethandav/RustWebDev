@@ -171,6 +171,10 @@ async fn main() {
     let store = Arc::new(Store::new());
 
     let test_db = TestDb::new("postgres://postgres:thisismypassword@db:5432/questions").await;
+
+    sqlx::migrate!()
+        .run(&test_db.clone().connection).await.expect("Cannot run migration!");
+
     let test_query = test_db.get_questions().await;
     eprintln!("{:?}", test_query);
 
