@@ -35,7 +35,7 @@ INSERT INTO answers (content, corresponding_question) VALUES
 ('Regular use of social media can lead to anxiety, depression, and feelings of inadequacy, particularly among teens.', 34),
 ('Effective stress management can be achieved through regular exercise, mindfulness meditation, and maintaining a balanced lifestyle.', 35),
 ('Key factors for a successful startup include a clear business model, strong team, product-market fit, and efficient capital management.', 36),
-('Brand identity helps in distinguishing a business from competitors, building customer loyalty, and defining its market position.', 37)
+('Brand identity helps in distinguishing a business from competitors, building customer loyalty, and defining its market position.', 37),
 ('Top attractions in NYC include the Statue of Liberty, Central Park, Times Square, and the Metropolitan Museum of Art.', 38),
 ('The best time to see the Northern Lights in Iceland is from late September to early April when nights are darkest.', 39),
 ('Start by educating yourself on basic stock market terms, open a brokerage account, and begin with small, low-risk investments.', 40),
