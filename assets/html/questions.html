@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="{{stylesheet}}">
+    </head>
+    <body>
+        {% block content %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Content</th>
+                    <th>Tags</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for question in questions %}
+                <tr>
+                    <td>{{ question.id }}</td>
+                    <td>{{ question.title }}</td>
+                    <td>{{ question.content }}</td>
+                    <td>
+                        {% for tag in question.tags %}
+                        <span>{{ tag }}</span>
+                        {% else %}
+                        No Tags
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endblock %}
+    </body>

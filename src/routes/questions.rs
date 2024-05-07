@@ -12,13 +12,15 @@ use serde::de::{self, Visitor};
 use std::sync::Arc;
 use crate::{Error, Store, extract_pagination};
 use std::fmt;
+use tokio::sync::RwLock;
+use crate::QuestionsTemplate;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Question {
     pub id: QuestionId,
     pub title: String,
     pub content: String,
-    pub tags: Option<Vec<String>>,
+    pub tags: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -47,6 +49,13 @@ impl<'de> Visitor<'de> for QuestionIdVisitor {
     }
 }
 
+impl fmt::Display for QuestionId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Output the inner integer
+        write!(f, "{}", self.0)
+    }
+}
+
 impl<'de> Deserialize<'de> for QuestionId {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -56,8 +65,9 @@ impl<'de> Deserialize<'de> for QuestionId {
     }
 }
 
+/*
 pub async fn get_questions(
-    Extension(store): Extension<Arc<Store>>,
+    Extension(store): Extension<Arc<RwLock<Store>>>,
     query: Query<QuestionQuery>
 ) -> Result<Json<Vec<Question>>, Error> {
 
@@ -94,6 +104,7 @@ pub async fn add_question(
     Ok(response)
 }
 
+
 pub async fn update_question(
     Extension(store): Extension<Arc<Store>>,
     Path(id_str): Path<String>,
@@ -128,7 +139,7 @@ pub async fn delete_question(
         None => Err(Error::QuestionNotFound)
     }
 }
-
+*/
 pub fn parse_id(id_str: &str) -> Result<i32, String> {
     match id_str.parse::<i32>() {
         Ok(num) => Ok(num),

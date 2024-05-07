@@ -25,6 +25,7 @@ use std::{
     net::Ipv4Addr,
     sync::Arc
 };
+use std::collections::HashSet;
 use tower_http::{cors::{CorsLayer, AllowOrigin, AllowMethods}, services};
 use http::HeaderName;
 use std::collections::HashMap;
@@ -36,11 +37,20 @@ use crate::web::*;
 const STYLESHEET: &str = "assets/static/questions.css";
 
 #[derive(Clone)]
-pub struct TestDb {
+pub struct Store {
     pub connection: PgPool,
 }
 
-impl TestDb {
+impl Store {
+    async fn to_question(&self, row: &PgRow) -> Result<Question, sqlx::Error> {
+        Ok(Question {
+            id: QuestionId(row.get("id")),
+            title: row.get("title"),
+            content: row.get("content"),
+            tags: row.get("tags"),
+        })
+    }
+
     pub async fn new(db_url: &str) -> Self {
         let db_pool = match PgPoolOptions::new()
             .max_connections(5)
@@ -49,7 +59,7 @@ impl TestDb {
                 Err(e) => panic!("Could not establish db connection: {}", e)
         };
         
-        TestDb {
+        Store {
             connection: db_pool,
         }
     }
@@ -75,32 +85,13 @@ impl TestDb {
             }
     }
 
-}
+    pub async fn get_random(&self) -> Result<Question, sqlx::Error> {
+        let row = sqlx::query(r#"SELECT * FROM questions ORDER BY RANDOM () LIMIT 1;"#)
+            .fetch_one(&self.connection)
+            .await?;
 
-#[derive(Clone)]
-struct Store {
-    questions: Arc<RwLock<HashMap<QuestionId, Question>>>,
-    answers: Arc<RwLock<HashMap<AnswerId, Answer>>>,
-}
-
-impl Store {
-    fn new() -> Self {
-        Store {
-            questions: Arc::new(RwLock::new(Self::init())),
-            answers: Arc::new(RwLock::new(HashMap::new())),
-        }
-    }
-
-    fn init() -> HashMap<QuestionId, Question> {
-        let file = include_str!("../questions.json");
-        serde_json::from_str(file).expect("Can't read questions.json")
-    }
-
-    pub async fn get_random(&self) -> Result<Question, StatusCode> {
-        let questions = self.questions.read().await.clone();
-        let(_, question) = fastrand::choice(questions.iter())
-            .ok_or(StatusCode::BAD_REQUEST)?;
-        Ok(question.to_owned())
+        let question = self.to_question(&row).await?;
+        Ok(question)
     }
 }
 
@@ -168,14 +159,13 @@ async fn not_found() -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() {
-    let store = Arc::new(Store::new());
-
-    let test_db = TestDb::new("postgres://postgres:thisismypassword@db:5432/questions").await;
+    let store = Store::new("postgres://postgres:thisismypassword@db:5432/questions").await;
+    let store = Arc::new(RwLock::new(store));
 
     sqlx::migrate!()
-        .run(&test_db.clone().connection).await.expect("Cannot run migration!");
+        .run(&store.clone().read().await.connection).await.expect("Cannot run migration!");
 
-    let test_query = test_db.get_questions().await;
+    let test_query = store.read().await.get_questions().await;
     eprintln!("{:?}", test_query);
 
     let ip = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3000);
@@ -187,11 +177,11 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(index_handler))
-        .route("/questions", get(get_questions))
-        .route("/questions", post(add_question))
-        .route("/questions/:id", put(update_question))
-        .route("/questions/:id", delete(delete_question))
-        .route("/answers", post(add_answer))
+        .route("/questions", get(questions_index))
+        //.route("/questions", post(add_question))
+        //.route("/questions/:id", put(update_question))
+        //.route("/questions/:id", delete(delete_question))
+        //.route("/answers", post(add_answer))
         .route_service("/questions.css", stylesheet)
         .layer(
             CorsLayer::new()

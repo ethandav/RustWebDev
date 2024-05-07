@@ -37,7 +37,7 @@ pub async fn add_answer(
             content: content.to_string(),
             question_id: QuestionId(parse_id(question_id).unwrap()),
         };
-        store.answers.write().await.insert(answer.id.clone(), answer);
+        //store.answers.write().await.insert(answer.id.clone(), answer);
         let response = Response::builder()
             .status(StatusCode::OK)
             .body(Body::from("Answer added"))
