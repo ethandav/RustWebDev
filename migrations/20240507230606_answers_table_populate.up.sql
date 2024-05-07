@@ -3,7 +3,7 @@ INSERT INTO answers (content, corresponding_question) VALUES
 ('Make sure to use HTTP methods appropriately and keep your API responses consistent.', 2),
 ('SQL databases are relational, well structured, suitable for complex queries. NoSQL is more flexible with unstructured data, and it scales well.', 3),
 ('Create a dedicated workspace, maintain regular hours, and use online tools for communication.', 4),
-('Reinforcement learning and GPT models are currently very popular in machine learning circles.', 5)
+('Reinforcement learning and GPT models are currently very popular in machine learning circles.', 5),
 ('SSDs use flash memory to store data, offering faster read and write speeds than traditional magnetic disks.', 6),
 ('Docker containers package software and its dependencies into a standardized unit for software development that ensures it works seamlessly in any environment.', 7),
 ('Fatty fish, cheese, egg yolks, and fortified foods like milk and cereals are good sources of vitamin D.', 8),
@@ -15,7 +15,7 @@ INSERT INTO answers (content, corresponding_question) VALUES
 ('The title refers to the innocence of a mockingbird and the sin of harming it, symbolizing the destruction of innocence in the novel.', 14),
 ('This technique seeks to depict the multitudinous thoughts and feelings that pass through the mind.', 15),
 ('Renaissance art focuses on realism and human emotion, often with religious themes, and uses techniques like perspective.', 16),
-('Influential modern artists include Pablo Picasso, Marcel Duchamp, and Jackson Pollock, each known for pioneering different art movements.', 17)
+('Influential modern artists include Pablo Picasso, Marcel Duchamp, and Jackson Pollock, each known for pioneering different art movements.', 17),
 ('Implementing better public transportation, promoting electric vehicles, and increasing green spaces are effective strategies.', 18),
 ('Polar regions are experiencing melting ice which leads to rising sea levels and loss of habitat for native wildlife.', 19),
 ('Online education offers flexibility, accessibility to diverse courses, and often more personalized learning experiences.', 20),
@@ -25,7 +25,7 @@ INSERT INTO answers (content, corresponding_question) VALUES
 ('Bong Joon-ho won the Best Director Oscar in 2020 for his film "Parasite."', 24),
 ('Notable sci-fi movies from the last decade include "Inception," "Interstellar," and "Blade Runner 2049."', 25),
 ('The UN promotes peace, fights hunger, protects human rights, and provides humanitarian aid in disasters.', 26),
-('Electoral college votes are based on the total number of Senators and Representatives a state has in Congress.', 27)
+('Electoral college votes are based on the total number of Senators and Representatives a state has in Congress.', 27),
 ('Essential spices include salt, black pepper, cumin, paprika, and cinnamon among others.', 28),
 ('For a perfect espresso, use fresh beans, grind them fine, and ensure your espresso machine is properly heated.', 29),
 ('Blockchain is a distributed ledger technology that enables secure, transparent transactions without a central authority.', 30),
@@ -49,7 +49,7 @@ INSERT INTO answers (content, corresponding_question) VALUES
 ('Bees pollinate plants, which is crucial for food production, maintaining natural plant populations and ecological balance.', 48),
 ('Deforestation increases carbon emissions, disrupts water cycles, and leads to loss of biodiversity, all of which contribute to climate change.', 49),
 ('Wedding traditions vary widely; for example, India has vibrant weddings involving rituals like Mehndi, while in Sweden, it’s common to have an outdoor ceremony.', 50),
-('In China, tea symbolizes hospitality, respect, and social status, and it plays a central role in many rituals and ceremonies.', 51)
+('In China, tea symbolizes hospitality, respect, and social status, and it plays a central role in many rituals and ceremonies.', 51),
 ('Jazz is characterized by swing and blue notes, complex chords, and call and response vocals.', 52),
 ('Hip-hop has profoundly influenced street fashion, vernacular speech, and the global music scene.', 53),
 ('Baroque art is known for its drama, rich color, intense light and shade contrast, and elaborate ornamentation.', 54),
@@ -63,7 +63,7 @@ INSERT INTO answers (content, corresponding_question) VALUES
 ('Key figures include François Truffaut, Jean-Luc Godard, and Agnès Varda, who broke traditional filmmaking rules and emphasized personal expression.', 62),
 ('Documentaries focus on real-life events or issues, often with the goal of informing or persuading, through factual storytelling.', 63),
 ('Magical realism blends magical elements with the real world, seen in works like Gabriel García Márquez’s "One Hundred Years of Solitude."', 64),
-('Key postmodern authors include Thomas Pynchon, Don DeLillo, and Margaret Atwood, known for their narrative experimentation and skepticism.', 65)
+('Key postmodern authors include Thomas Pynchon, Don DeLillo, and Margaret Atwood, known for their narrative experimentation and skepticism.', 65),
 ('Colors can evoke different emotions and reactions; marketers use this to make products more appealing and to influence purchasing decisions.', 66),
 ('Adequate sleep is crucial for mental health, affecting mood, cognitive abilities, and overall mental resilience.', 67),
 ('Quantum computing could revolutionize areas like cryptography and complex problem solving by processing information exponentially faster.', 68),
@@ -81,7 +81,7 @@ INSERT INTO answers (content, corresponding_question) VALUES
 ('Influential female directors include Kathryn Bigelow, Ava DuVernay, and Greta Gerwig, known for their unique storytelling and critical acclaim.', 80),
 ('Streaming services have led to a decline in traditional TV viewership and have changed how audiences consume media, favoring on-demand content.', 81),
 ('Dystopian literature explores negative societal trends taken to extremes, like George Orwell’s "1984" or Aldous Huxley’s "Brave New World."', 82),
-('Shakespeare introduced over 1,700 new words and countless phrases and idioms to the English language, enriching it immensely.', 83)
+('Shakespeare introduced over 1,700 new words and countless phrases and idioms to the English language, enriching it immensely.', 83),
 ('Sourdough bread making involves creating a starter from flour and water, which ferments to leaven bread naturally, giving it a distinctive taste.', 84),
 ('The Mediterranean diet includes a high intake of vegetables, fruits, nuts, seeds, and olive oil, with moderate consumption of fish and poultry, contributing to heart and brain health.', 85),
 ('Stoicism teaches the development of self-control and fortitude as a means to overcome destructive emotions; it emphasizes rationality and virtue.', 86),
@@ -91,7 +91,7 @@ INSERT INTO answers (content, corresponding_question) VALUES
 ('Blockchain technology can revolutionize supply chain management, provide secure digital voting systems, and enhance data security across various sectors.', 90),
 ('IoT enables devices within a home to be interconnected and remotely controlled, enhancing convenience, energy efficiency, and security.', 91),
 ('Gothic architecture is noted for its pointed arches, ribbed vaults, flying buttresses, and extensive use of stained glass windows.', 92),
-('Modern art has influenced popular culture through its innovative use of materials and techniques, challenging traditional boundaries and influencing design, fashion, and media.', 93)
+('Modern art has influenced popular culture through its innovative use of materials and techniques, challenging traditional boundaries and influencing design, fashion, and media.', 93),
 ('Effective stress reduction techniques include mindfulness meditation, physical activity, proper sleep, and time management.', 94),
 ('Regular exercise helps reduce anxiety and depression, improves mood, enhances self-esteem, and can lead to better mental health overall.', 95),
 ('Lifelong learning keeps the mind engaged, improves adaptability to change, enhances employability, and contributes to personal fulfillment.', 96),
