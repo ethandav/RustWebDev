@@ -35,7 +35,7 @@ INSERT INTO questions (title, content, tags) VALUES
 ('What are the psychological effects of social media?', 'How does the regular use of social media platforms affect mental health?', ARRAY['psychology', 'social media', 'mental health']),
 ('How can stress be managed effectively?', 'What are some effective strategies for managing stress in daily life?', ARRAY['psychology', 'stress management']),
 ('What are the key factors in a successful startup?', 'What should entrepreneurs focus on to ensure their startup succeeds?', ARRAY['business', 'startups']),
-('How important is brand identity for a business?', 'Why is establishing a strong brand identity crucial for business success?', ARRAY['business', 'branding'])
+('How important is brand identity for a business?', 'Why is establishing a strong brand identity crucial for business success?', ARRAY['business', 'branding']),
 ('What are the must-visit attractions in New York City?', 'Planning a trip to NYC, what are some places I absolutely must see?', ARRAY['travel', 'NYC', 'tourism']),
 ('Best time to visit Iceland for Northern Lights?', 'When is the ideal time to visit Iceland to experience the Northern Lights?', ARRAY['travel', 'Iceland', 'Northern Lights']),
 ('How to start investing in the stock market?', 'I’m new to investing. What are the first steps I should take to start investing in the stock market?', ARRAY['finance', 'investing', 'stock market']),
