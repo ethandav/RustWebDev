@@ -2,7 +2,7 @@
 Ethan Davis<br>
 Homework Repo for CS 410P - Rust Web Developement
 
-To Build:
+<h1>To Build:</h1>
 docker compose up --build
 
 <h2>Routes:</h2>
