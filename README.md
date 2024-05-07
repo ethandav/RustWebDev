@@ -2,6 +2,9 @@
 Ethan Davis<br>
 Homework Repo for CS 410P - Rust Web Developement
 
+To Build:
+docker compose up --build
+
 Examples for using the Questions REST API:
 Add Answer
 curl --location --request POST 'http://localhost:3000/answers' --header 'Content-Type: application/x-www-form-urlencoded' \
