@@ -78,4 +78,20 @@ impl Store {
         tx.commit().await
     }
 
+    pub async fn update(&mut self, index: &i32, question: Question) -> Result<(), sqlx::Error> {
+        let mut tx = Pool::begin(&self.connection).await?;
+        let q = sqlx::query(
+            r#"UPDATE questions SET
+            title = $2, content = $3, tags = $4
+            WHERE id = $1;"#
+        );
+        q.bind(index)
+            .bind(&question.title)
+            .bind(&question.content)
+            .bind(&question.tags)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await
+    }
+
 }

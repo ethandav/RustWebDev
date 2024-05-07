@@ -86,6 +86,29 @@ pub async fn add_question(
     }
 }
 
+pub async fn update_question(
+    Extension(store): Extension<Arc<RwLock<Store>>>,
+    Path(id_str): Path<String>,
+    Json(question): Json<Question>
+) -> Result<impl IntoResponse, StatusCode> {
+    let id = parse_id(&id_str).unwrap();
+    let mut store = store.write().await;
+    match store.update(&id, question).await {
+        Ok(_) => {
+            let response = Response::builder()
+                .status(StatusCode::CREATED)
+                .body(Body::from("Question Updated"))
+                .unwrap();
+
+            Ok(response)
+        },
+        Err(e) => {
+            eprintln!("Failed to Update question: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
 /*
 pub async fn get_questions(
     Extension(store): Extension<Arc<RwLock<Store>>>,
@@ -111,9 +134,6 @@ pub async fn get_questions(
         Ok(Json(res))
     }
 }
-
-
-
 
 pub async fn update_question(
     Extension(store): Extension<Arc<Store>>,
