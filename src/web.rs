@@ -79,3 +79,30 @@ pub async fn index_handler(
     }
 }
 
+//TODO: Pagination
+/*
+#[derive(Debug)]
+struct Pagination {
+    start: usize,
+    end: usize,
+}
+
+fn extract_pagination(
+    query: Query<QuestionQuery>
+) -> Result<Pagination, Error> {
+    if let (Some(start), Some(end)) = (&query.start, &query.end) {
+        let start_parsed = start.parse::<usize>().map_err(Error::Parse)?;
+        let end_parsed = end.parse::<usize>().map_err(Error::Parse)?;
+
+        Ok(Pagination {
+            start: start_parsed,
+            end: end_parsed,
+        })
+    } else {
+        Err(Error::MissingParameters)
+    }
+}
+*/
+pub async fn not_found() -> impl IntoResponse {
+    (StatusCode::NOT_FOUND, "404 Not Found")
+}

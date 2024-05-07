@@ -6,7 +6,7 @@ use axum::{
     Json,
     body::Body,
 };
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use serde::de::{self, Visitor};
 use std::sync::Arc;
 use crate::Store;
@@ -44,16 +44,16 @@ impl<'de> Visitor<'de> for AnswerIdVisitor {
 
 impl fmt::Display for AnswerId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // Output the inner integer
         write!(f, "{}", self.0)
     }
 }
 
-#[derive(Debug, Deserialize)]
+//TODO: Use forms to create answers
+/*#[derive(Debug, Deserialize)]
 pub struct AnswerForm {
     pubcontent: Option<String>,
     question_id: Option<String>,
-}
+}*/
 
 pub async fn add_answer(
     Extension(store): Extension<Arc<RwLock<Store>>>,
