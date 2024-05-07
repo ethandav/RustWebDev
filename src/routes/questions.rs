@@ -65,6 +65,27 @@ impl<'de> Deserialize<'de> for QuestionId {
     }
 }
 
+pub async fn add_question(
+    Extension(store): Extension<Arc<RwLock<Store>>>,
+    Json(question): Json<Question>
+) -> Result<impl IntoResponse, StatusCode> {
+    let mut store = store.write().await;
+    match store.add(question).await {
+        Ok(_) => {
+            let response = Response::builder()
+                .status(StatusCode::CREATED)
+                .body(Body::from("Question added"))
+                .unwrap();
+
+            Ok(response)
+        },
+        Err(e) => {
+            eprintln!("Failed to add question: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
 /*
 pub async fn get_questions(
     Extension(store): Extension<Arc<RwLock<Store>>>,
@@ -91,18 +112,7 @@ pub async fn get_questions(
     }
 }
 
-pub async fn add_question(
-    Extension(store): Extension<Arc<Store>>,
-    Json(question): Json<Question>
-) -> Result<impl IntoResponse, StatusCode> {
-    store.questions.write().await.insert(question.id.clone(), question);
-    let response = Response::builder()
-        .status(StatusCode::OK)
-        .body(Body::from("Question added"))
-        .unwrap();
 
-    Ok(response)
-}
 
 
 pub async fn update_question(

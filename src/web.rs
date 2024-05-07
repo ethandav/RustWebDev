@@ -1,5 +1,6 @@
 use crate::*;
 use askama::Template;
+use sqlx::types::Json;
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -52,3 +53,4 @@ pub async fn index_handler(
         Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
     }
 }
+

@@ -1,6 +1,7 @@
 use crate::routes::questions::*;
 use sqlx::postgres::{PgPoolOptions, PgPool, PgRow};
 use sqlx::Row;
+use sqlx::Pool;
 use crate::Error;
 
 #[derive(Clone)]
@@ -60,4 +61,21 @@ impl Store {
         let question = self.to_question(&row).await?;
         Ok(question)
     }
+
+    pub async fn add(&mut self, question: Question) -> Result<(), sqlx::Error> {
+        let mut tx = Pool::begin(&self.connection).await?;
+        sqlx::query(
+            r#"INSERT INTO questions
+            (id, title, content, tags)
+            VALUES ($1, $2, $3, $4);"#,
+        )
+        .bind(question.id.0)
+        .bind(&question.title)
+        .bind(&question.content)
+        .bind(&question.tags)
+        .execute(&mut *tx)
+        .await?;
+        tx.commit().await
+    }
+
 }
