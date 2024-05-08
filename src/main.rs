@@ -41,9 +41,6 @@ async fn main() {
     sqlx::migrate!()
         .run(&store.clone().read().await.connection).await.expect("Cannot run migration!");
 
-    let test_query = store.read().await.get_questions().await;
-    eprintln!("{:?}", test_query);
-
     let ip = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3000);
     eprintln!("Questions server: serving at {}", ip);
     let listener = tokio::net::TcpListener::bind(ip).await.unwrap();
