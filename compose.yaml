@@ -17,6 +17,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: .
+          target: src
+        - action: rebuild
+          path: .
+          target: assets
   db:
     image: postgres
     restart: always
