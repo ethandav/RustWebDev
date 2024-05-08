@@ -6,13 +6,14 @@ Homework Repo for CS 410P - Rust Web Developement
 docker compose up --build
 
 <h2>Routes:</h2>
-index/<br>
-questions/<br>
-answers/<br>
+/<br>
+/ask<br>
+/questions<br>
+/answers<br>
 
 <h2>Examples for using the Questions REST API:</h2>
 <h4>Add Answer</h4>
-curl --location --request POST 'http://localhost:3000/answers' --header 'Content-Type: application/json' --data-raw '{"id":2,"title":"New Answer 2","content":"Google it, dummy!","question_id":"1"}' 
+Navigate to /ask and use form to sumbit a new question
 
 <h4>Delete Answer</h4>
 curl --location --request DELETE 'localhost:3000/answers/1' --header 'Content-Type: application/json'
