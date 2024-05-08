@@ -49,6 +49,20 @@ impl<'a> AnswersTemplate<'a> {
     }
 }
 
+#[derive(Template)]
+#[template(path = "ask.html")]
+pub struct AskTemplate {
+    stylesheet: &'static str,
+}
+
+impl AskTemplate {
+    fn new() -> Self {
+        Self {
+            stylesheet: "/questions.css",
+        }
+    }
+}
+
 pub async fn questions_index(
     Extension(store): Extension<Arc<RwLock<Store>>>
 ) -> Response {
@@ -77,6 +91,11 @@ pub async fn index_handler(
         Ok(question) => (StatusCode::OK, IndexTemplate::new(question)).into_response(),
         Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
     }
+}
+
+pub async fn ask_handler(
+) -> Response {
+    (StatusCode::OK, AskTemplate::new()).into_response()
 }
 
 //TODO: Pagination

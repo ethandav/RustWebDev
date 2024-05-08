@@ -6,6 +6,7 @@ use axum::{
     Json,
     body::Body,
 };
+use axum::Form;
 use serde::{Deserialize, Deserializer, Serialize};
 use serde::de::{self, Visitor};
 use std::sync::Arc;
@@ -62,10 +63,30 @@ impl<'de> Deserialize<'de> for QuestionId {
     }
 }
 
+#[derive(Deserialize)]
+pub struct QuestionForm {
+    id: String,
+    title: String,
+    content: String,
+    tags: String,  // Tags as a comma-separated string
+}
+
 pub async fn add_question(
     Extension(store): Extension<Arc<RwLock<Store>>>,
-    Json(question): Json<Question>
+    Form(question_form): Form<QuestionForm>
 ) -> Result<impl IntoResponse, StatusCode> {
+
+    let parsed_tags: Vec<String> = question_form.tags.split(',')
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    let question = Question {
+        id: QuestionId(parse_id(&question_form.id).unwrap()),
+        title: question_form.title,
+        content: question_form.content,
+        tags: parsed_tags,
+    };
     let mut store = store.write().await;
     match store.add(question).await {
         Ok(_) => {
