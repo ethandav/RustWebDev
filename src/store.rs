@@ -12,14 +12,14 @@ pub struct Store {
 }
 
 impl Store {
-    async fn to_question(&self, row: &PgRow) -> Result<Question, sqlx::Error> {
+    /*async fn to_question(&self, row: &PgRow) -> Result<Question, sqlx::Error> {
         Ok(Question {
             id: QuestionId(row.get("id")),
             title: row.get("title"),
             content: row.get("content"),
             tags: row.get("tags"),
         })
-    }
+    }*/
 
     pub async fn new(db_url: &str) -> Self {
         let db_pool = match PgPoolOptions::new()
@@ -36,10 +36,12 @@ impl Store {
 
     pub async fn get_questions (
         &self,
-        //limit: Option<u32>,
-        //offset: u32
+        limit: i32,
+        offset: i32
     ) -> Result<Vec<Question>, Error> {
-        match sqlx::query("select * from questions")
+        match sqlx::query("select * from questions limit $1 offset $2")
+            .bind(limit)
+            .bind(offset)
             .map(|row: PgRow| Question {
                 id: QuestionId(row.get("id")),
                 title: row.get("title"),
@@ -55,14 +57,14 @@ impl Store {
             }
     }
 
-    pub async fn get_random(&self) -> Result<Question, sqlx::Error> {
+    /*pub async fn get_random(&self) -> Result<Question, sqlx::Error> {
         let row = sqlx::query(r#"SELECT * FROM questions ORDER BY RANDOM () LIMIT 1;"#)
             .fetch_one(&self.connection)
             .await?;
 
         let question = self.to_question(&row).await?;
         Ok(question)
-    }
+    }*/
 
     pub async fn add(&mut self, question: Question) -> Result<(), sqlx::Error> {
         let mut tx = Pool::begin(&self.connection).await?;

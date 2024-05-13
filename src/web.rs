@@ -1,17 +1,25 @@
 use crate::*;
 use askama::Template;
+use serde::Deserialize;
+use axum::extract::Query;
+
+#[derive(Debug, Deserialize)]
+pub struct PaginationQuery {
+    pub start: Option<String>,
+    pub end: Option<String>
+}
 
 #[derive(Template)]
 #[template(path = "index.html")]
 pub struct IndexTemplate<'a> {
-    question: &'a Question,
+    questions: &'a Vec<Question>,
     stylesheet: &'static str,
 }
 
 impl<'a> IndexTemplate<'a> {
-    fn new(question: &'a Question) -> Self {
+    fn new(questions: &'a Vec<Question>) -> Self {
         Self {
-            question,
+            questions,
             stylesheet: "/questions.css",
         }
     }
@@ -64,9 +72,23 @@ impl AskTemplate {
 }
 
 pub async fn questions_index(
-    Extension(store): Extension<Arc<RwLock<Store>>>
+    Extension(store): Extension<Arc<RwLock<Store>>>,
+    query: Query<PaginationQuery>
 ) -> Response {
-    let questions = store.read().await.get_questions().await;
+    let mut start: i32 = 0;
+    let mut end: i32 = 0;
+    if query.start.is_some() && query.end.is_some() {
+        match &extract_pagination(query) {
+            Ok(pagination) => {
+                start = pagination.start;
+                end = pagination.end;
+            },
+            Err(err) => {
+                (StatusCode::NO_CONTENT, err.to_string()).into_response();
+            }
+        }
+    }
+    let questions = store.read().await.get_questions(end, start).await;
     match &questions {
         Ok(question) => (StatusCode::OK, QuestionsTemplate::new(question)).into_response(),
         Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
@@ -86,9 +108,10 @@ pub async fn answers_index(
 pub async fn index_handler(
     Extension(store): Extension<Arc<RwLock<Store>>>
 ) -> Response {
-    let question = store.read().await.get_random().await;
-    match &question {
-        Ok(question) => (StatusCode::OK, IndexTemplate::new(question)).into_response(),
+    //let question = store.read().await.get_random().await;
+    let questions = store.read().await.get_questions(0,0).await;
+    match &questions {
+        Ok(questions) => (StatusCode::OK, IndexTemplate::new(questions)).into_response(),
         Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
     }
 }
@@ -98,20 +121,18 @@ pub async fn ask_handler(
     (StatusCode::OK, AskTemplate::new()).into_response()
 }
 
-//TODO: Pagination
-/*
 #[derive(Debug)]
 struct Pagination {
-    start: usize,
-    end: usize,
+    start: i32,
+    end: i32,
 }
 
 fn extract_pagination(
-    query: Query<QuestionQuery>
+    query: Query<PaginationQuery>
 ) -> Result<Pagination, Error> {
     if let (Some(start), Some(end)) = (&query.start, &query.end) {
-        let start_parsed = start.parse::<usize>().map_err(Error::Parse)?;
-        let end_parsed = end.parse::<usize>().map_err(Error::Parse)?;
+        let start_parsed = start.parse::<i32>().map_err(Error::Parse)?;
+        let end_parsed = end.parse::<i32>().map_err(Error::Parse)?;
 
         Ok(Pagination {
             start: start_parsed,
@@ -121,7 +142,7 @@ fn extract_pagination(
         Err(Error::MissingParameters)
     }
 }
-*/
+
 pub async fn not_found() -> impl IntoResponse {
     (StatusCode::NOT_FOUND, "404 Not Found")
 }
