@@ -46,28 +46,14 @@ impl<'a> QuestionsTemplate<'a> {
 #[template(path = "question.html")]
 pub struct QuestionTemplate<'a> {
     question: &'a Question,
-    stylesheet: &'static str,
-}
-
-impl<'a> QuestionTemplate<'a> {
-    fn new(question: &'a Question) -> Self {
-        Self {
-            question,
-            stylesheet: "/questions.css",
-        }
-    }
-}
-
-#[derive(Template)]
-#[template(path = "answers.html")]
-pub struct AnswersTemplate<'a> {
     answers: &'a Vec<Answer>,
     stylesheet: &'static str,
 }
 
-impl<'a> AnswersTemplate<'a> {
-    fn new(answers: &'a Vec<Answer>) -> Self {
+impl<'a> QuestionTemplate<'a> {
+    fn new(question: &'a Question, answers: &'a Vec<Answer>) -> Self {
         Self {
+            question,
             answers,
             stylesheet: "/questions.css",
         }
@@ -116,19 +102,11 @@ pub async fn question_index(
     Extension(store): Extension<Arc<RwLock<Store>>>,
     Path(id_str): Path<String>
 ) -> Response {
-    let question = store.read().await.get_question(&parse_id(&id_str).unwrap()).await;
+    let question_id = parse_id(&id_str).unwrap();
+    let question = store.read().await.get_question(&question_id).await;
+    let answers = store.read().await.get_answers(question_id).await;
     match &question {
-        Ok(question) => (StatusCode::OK, QuestionTemplate::new(question)).into_response(),
-        Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
-    }
-}
-
-pub async fn answers_index(
-    Extension(store): Extension<Arc<RwLock<Store>>>
-) -> Response {
-    let answers = store.read().await.get_answers().await;
-    match &answers {
-        Ok(answer) => (StatusCode::OK, AnswersTemplate::new(answer)).into_response(),
+        Ok(question) => (StatusCode::OK, QuestionTemplate::new(question,&answers.unwrap())).into_response(),
         Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
     }
 }

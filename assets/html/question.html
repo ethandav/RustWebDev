@@ -14,5 +14,12 @@
                 {% endfor %}
             </div>
         </div>
+        <div>
+            {% for answer in answers %}
+                <span>{{ answer.content }}</span>
+            {% else %}
+                No Answers
+            {% endfor %}
+        </div>
     </body>
 </html>

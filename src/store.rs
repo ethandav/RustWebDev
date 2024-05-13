@@ -71,7 +71,7 @@ impl Store {
             .bind(index)
             .fetch_one(&self.connection)
             .await?;
-        
+
         let question = self.to_question(&row).await?;
         Ok(question)
     }
@@ -119,10 +119,10 @@ impl Store {
 
     pub async fn get_answers (
         &self,
-        //limit: Option<u32>,
-        //offset: u32
+        question_id: i32,
     ) -> Result<Vec<Answer>, Error> {
-        match sqlx::query("select * from answers")
+        match sqlx::query("select * from answers where corresponding_question = $1")
+            .bind(question_id)
             .map(|row: PgRow| Answer {
                 id: AnswerId(row.get("id")),
                 content: row.get("content"),

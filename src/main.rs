@@ -56,7 +56,6 @@ async fn main() {
         .route("/questions/:id", get(question_index))
         .route("/questions/:id", put(update_question))
         .route("/questions/:id", delete(delete_question))
-        .route("/answers", get(answers_index))
         .route("/answers", post(add_answer))
         .route("/answers/:id", put(update_answer))
         .route("/answers/:id", delete(delete_answer))
