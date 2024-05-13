@@ -1,0 +1,18 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="{{stylesheet}}">
+    </head>
+    <body>
+        <div>
+            <h2>{{ question.title }}</h2>
+            <div>{{ question.content }}</div>
+            <div>
+                {% for tag in question.tags %}
+                    <span>{{ tag }}</span>
+                    {% else %}
+                    No Tags
+                {% endfor %}
+            </div>
+        </div>
+    </body>
+</html>

@@ -12,14 +12,14 @@ pub struct Store {
 }
 
 impl Store {
-    /*async fn to_question(&self, row: &PgRow) -> Result<Question, sqlx::Error> {
+    async fn to_question(&self, row: &PgRow) -> Result<Question, sqlx::Error> {
         Ok(Question {
             id: QuestionId(row.get("id")),
             title: row.get("title"),
             content: row.get("content"),
             tags: row.get("tags"),
         })
-    }*/
+    }
 
     pub async fn new(db_url: &str) -> Self {
         let db_pool = match PgPoolOptions::new()
@@ -65,6 +65,16 @@ impl Store {
         let question = self.to_question(&row).await?;
         Ok(question)
     }*/
+
+    pub async fn get_question(&self, index: &i32) -> Result<Question, sqlx::Error> {
+        let row = sqlx::query(r#"SELECT * FROM questions where id = $1;"#)
+            .bind(index)
+            .fetch_one(&self.connection)
+            .await?;
+        
+        let question = self.to_question(&row).await?;
+        Ok(question)
+    }
 
     pub async fn add(&mut self, question: Question) -> Result<(), sqlx::Error> {
         let mut tx = Pool::begin(&self.connection).await?;

@@ -2,6 +2,7 @@ use crate::*;
 use askama::Template;
 use serde::Deserialize;
 use axum::extract::Query;
+use axum::extract::Path;
 
 #[derive(Debug, Deserialize)]
 pub struct PaginationQuery {
@@ -36,6 +37,22 @@ impl<'a> QuestionsTemplate<'a> {
     fn new(questions: &'a Vec<Question>) -> Self {
         Self {
             questions,
+            stylesheet: "/questions.css",
+        }
+    }
+}
+
+#[derive(Template)]
+#[template(path = "question.html")]
+pub struct QuestionTemplate<'a> {
+    question: &'a Question,
+    stylesheet: &'static str,
+}
+
+impl<'a> QuestionTemplate<'a> {
+    fn new(question: &'a Question) -> Self {
+        Self {
+            question,
             stylesheet: "/questions.css",
         }
     }
@@ -91,6 +108,17 @@ pub async fn questions_index(
     let questions = store.read().await.get_questions(end, start).await;
     match &questions {
         Ok(question) => (StatusCode::OK, QuestionsTemplate::new(question)).into_response(),
+        Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
+    }
+}
+
+pub async fn question_index(
+    Extension(store): Extension<Arc<RwLock<Store>>>,
+    Path(id_str): Path<String>
+) -> Response {
+    let question = store.read().await.get_question(&parse_id(&id_str).unwrap()).await;
+    match &question {
+        Ok(question) => (StatusCode::OK, QuestionTemplate::new(question)).into_response(),
         Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
     }
 }

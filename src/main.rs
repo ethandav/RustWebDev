@@ -53,6 +53,7 @@ async fn main() {
         .route("/ask", get(ask_handler))
         .route("/questions", get(questions_index))
         .route("/questions/add", post(add_question))
+        .route("/questions/:id", get(question_index))
         .route("/questions/:id", put(update_question))
         .route("/questions/:id", delete(delete_question))
         .route("/answers", get(answers_index))
