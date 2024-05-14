@@ -34,6 +34,14 @@ impl Store {
         }
     }
 
+    pub async fn questions_count(&self) -> Result<i64, sqlx::Error> {
+        let count: i64 = sqlx::query_scalar("select count(*) from questions")
+        .fetch_one(&self.connection)
+        .await?;
+
+        Ok(count)
+    }
+
     pub async fn get_questions (
         &self,
         limit: i32,

@@ -30,5 +30,10 @@
                 {% endfor %}
             </tbody>
         </table>
+        <div id="pagination">
+            {% for page in pages %}
+                <a href="?page={{ page }}&limit={{ limit }}">{{ page }}</a>
+            {% endfor %}
+        </div>
         {% endblock %}
     </body>

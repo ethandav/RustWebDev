@@ -30,13 +30,17 @@ impl<'a> IndexTemplate<'a> {
 #[template(path = "questions.html")]
 pub struct QuestionsTemplate<'a> {
     questions: &'a Vec<Question>,
+    pages: &'a Vec<i64>,
+    limit: &'a i32,
     stylesheet: &'static str,
 }
 
 impl<'a> QuestionsTemplate<'a> {
-    fn new(questions: &'a Vec<Question>) -> Self {
+    fn new(questions: &'a Vec<Question>, pages: &'a Vec<i64>, limit: &'a i32) -> Self {
         Self {
             questions,
+            pages,
+            limit,
             stylesheet: "/questions.css",
         }
     }
@@ -80,6 +84,7 @@ pub async fn questions_index(
 ) -> Response {
     let mut page: i32 = 1;
     let mut limit: i32 = 20;
+    let count = store.read().await.questions_count().await.unwrap();
     if query.page.is_some() && query.limit.is_some() {
         match &extract_pagination(query) {
             Ok(pagination) => {
@@ -91,9 +96,11 @@ pub async fn questions_index(
             }
         }
     }
+    let total_pages = (count + (limit as i64) - 1) / (limit as i64);
+    let pages = (1..(total_pages + 1)).collect::<Vec<i64>>();
     let questions = store.read().await.get_questions(limit, page).await;
     match &questions {
-        Ok(question) => (StatusCode::OK, QuestionsTemplate::new(question)).into_response(),
+        Ok(question) => (StatusCode::OK, QuestionsTemplate::new(question, &pages, &limit)).into_response(),
         Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
     }
 }
