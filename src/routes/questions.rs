@@ -148,33 +148,6 @@ pub async fn delete_question(
     }
 }
 
-/*
-pub async fn get_questions(
-    Extension(store): Extension<Arc<RwLock<Store>>>,
-    query: Query<QuestionQuery>
-) -> Result<Json<Vec<Question>>, Error> {
-
-    if query.start.is_some() && query.end.is_some() {
-        match extract_pagination(query) {
-            Ok(pagination) => {
-                let res: Vec<Question> = store.questions.read().await.values()
-                    .skip(pagination.start)
-                    .take(pagination.end - pagination.start)
-                    .cloned()
-                    .collect();
-                Ok(Json(res))
-            },
-            Err(err) => {
-                Err(err)
-            }
-        }
-    } else {
-        let res: Vec<Question> = store.questions.read().await.values().cloned().collect();
-        Ok(Json(res))
-    }
-}
-*/
-
 pub fn parse_id(id_str: &str) -> Result<i32, String> {
     match id_str.parse::<i32>() {
         Ok(num) => Ok(num),
