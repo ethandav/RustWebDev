@@ -6,8 +6,8 @@ use axum::extract::Path;
 
 #[derive(Debug, Deserialize)]
 pub struct PaginationQuery {
-    pub start: Option<String>,
-    pub end: Option<String>
+    pub page: Option<String>,
+    pub limit: Option<String>
 }
 
 #[derive(Template)]
@@ -78,20 +78,20 @@ pub async fn questions_index(
     Extension(store): Extension<Arc<RwLock<Store>>>,
     query: Query<PaginationQuery>
 ) -> Response {
-    let mut start: i32 = 0;
-    let mut end: i32 = 0;
-    if query.start.is_some() && query.end.is_some() {
+    let mut page: i32 = 1;
+    let mut limit: i32 = 20;
+    if query.page.is_some() && query.limit.is_some() {
         match &extract_pagination(query) {
             Ok(pagination) => {
-                start = pagination.start;
-                end = pagination.end;
+                page = pagination.page;
+                limit = pagination.limit;
             },
             Err(err) => {
                 (StatusCode::NO_CONTENT, err.to_string()).into_response();
             }
         }
     }
-    let questions = store.read().await.get_questions(end, start).await;
+    let questions = store.read().await.get_questions(limit, page).await;
     match &questions {
         Ok(question) => (StatusCode::OK, QuestionsTemplate::new(question)).into_response(),
         Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
@@ -114,8 +114,7 @@ pub async fn question_index(
 pub async fn index_handler(
     Extension(store): Extension<Arc<RwLock<Store>>>
 ) -> Response {
-    //let question = store.read().await.get_random().await;
-    let questions = store.read().await.get_questions(0,0).await;
+    let questions = store.read().await.get_questions(20,1).await;
     match &questions {
         Ok(questions) => (StatusCode::OK, IndexTemplate::new(questions)).into_response(),
         Err(e) => (StatusCode::NO_CONTENT, e.to_string()).into_response(),
@@ -129,20 +128,20 @@ pub async fn ask_handler(
 
 #[derive(Debug)]
 struct Pagination {
-    start: i32,
-    end: i32,
+    page: i32,
+    limit: i32,
 }
 
 fn extract_pagination(
     query: Query<PaginationQuery>
 ) -> Result<Pagination, Error> {
-    if let (Some(start), Some(end)) = (&query.start, &query.end) {
-        let start_parsed = start.parse::<i32>().map_err(Error::Parse)?;
-        let end_parsed = end.parse::<i32>().map_err(Error::Parse)?;
+    if let (Some(page), Some(limit)) = (&query.page, &query.limit) {
+        let start_parsed = page.parse::<i32>().map_err(Error::Parse)?;
+        let end_parsed = limit.parse::<i32>().map_err(Error::Parse)?;
 
         Ok(Pagination {
-            start: start_parsed,
-            end: end_parsed,
+            page: start_parsed,
+            limit: end_parsed,
         })
     } else {
         Err(Error::MissingParameters)
