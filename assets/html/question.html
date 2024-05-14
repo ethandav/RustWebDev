@@ -3,10 +3,10 @@
         <link rel="stylesheet" href="{{stylesheet}}">
     </head>
     <body>
-        <div>
+        <div id="question">
             <h2>{{ question.title }}</h2>
             <div>{{ question.content }}</div>
-            <div>
+            <div id="question-body">
                 {% for tag in question.tags %}
                     <span>{{ tag }}</span>
                     {% else %}
@@ -14,12 +14,21 @@
                 {% endfor %}
             </div>
         </div>
-        <div>
+        <hr>
+        <div id="answers">
             {% for answer in answers %}
-                <span>{{ answer.content }}</span>
+                <div class="answer">{{ answer.content }}</div>
             {% else %}
                 No Answers
             {% endfor %}
+        </div>
+        <div id="answer-form">
+            <form method="POST" action="/answers/add">
+                <textarea name="content"></textarea>
+                <input type="hidden" name="corresponding_question" value="{{ question.id }}">
+                <br>
+                <button type="submit">Answer</button>
+            </form>
         </div>
     </body>
 </html>

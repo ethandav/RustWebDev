@@ -14,6 +14,7 @@ use std::fmt;
 use tokio::sync::RwLock;
 use crate::QuestionId;
 use crate::parse_id;
+use axum::Form;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Answer {
@@ -48,17 +49,23 @@ impl fmt::Display for AnswerId {
     }
 }
 
-//TODO: Use forms to create answers
-/*#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct AnswerForm {
-    pubcontent: Option<String>,
-    question_id: Option<String>,
-}*/
+    content: String,
+    corresponding_question: String,
+}
 
 pub async fn add_answer(
     Extension(store): Extension<Arc<RwLock<Store>>>,
-    Json(answer): Json<Answer>
+    Form(answer_form): Form<AnswerForm>
 ) -> Result<impl IntoResponse, StatusCode> {
+
+    let answer = Answer {
+        id: AnswerId(0),
+        content: answer_form.content,
+        question_id: QuestionId(parse_id(&answer_form.corresponding_question).unwrap()),
+    };
+
     let mut store = store.write().await;
     match store.add_answer(answer).await {
         Ok(_) => {
