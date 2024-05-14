@@ -80,10 +80,9 @@ impl Store {
         let mut tx = Pool::begin(&self.connection).await?;
         sqlx::query(
             r#"INSERT INTO questions
-            (id, title, content, tags)
-            VALUES ($1, $2, $3, $4);"#,
+            (title, content, tags)
+            VALUES ($1, $2, $3);"#,
         )
-        .bind(question.id.0)
         .bind(&question.title)
         .bind(&question.content)
         .bind(&question.tags)

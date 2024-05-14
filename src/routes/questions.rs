@@ -65,7 +65,6 @@ impl<'de> Deserialize<'de> for QuestionId {
 
 #[derive(Deserialize)]
 pub struct QuestionForm {
-    id: String,
     title: String,
     content: String,
     tags: String,  // Tags as a comma-separated string
@@ -82,7 +81,7 @@ pub async fn add_question(
         .collect();
 
     let question = Question {
-        id: QuestionId(parse_id(&question_form.id).unwrap()),
+        id: QuestionId(0),
         title: question_form.title,
         content: question_form.content,
         tags: parsed_tags,
