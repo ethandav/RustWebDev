@@ -67,7 +67,7 @@ impl<'de> Deserialize<'de> for QuestionId {
 pub struct QuestionForm {
     title: String,
     content: String,
-    tags: String,  // Tags as a comma-separated string
+    tags: String,
 }
 
 pub async fn add_question(
