@@ -1,8 +1,5 @@
-<html>
-    <head>
-        <link rel="stylesheet" href="{{stylesheet}}">
-    </head>
-    <body>
+{% extends "common.html" %}
+{% block content %}
         <div id="question">
             <h2>{{ question.title }}</h2>
             <div>{{ question.content }}</div>
@@ -30,5 +27,4 @@
                 <button type="submit">Answer</button>
             </form>
         </div>
-    </body>
-</html>
+{% endblock content %}

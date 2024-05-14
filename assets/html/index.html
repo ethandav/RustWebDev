@@ -1,8 +1,4 @@
-<html>
-    <head>
-        <link rel="stylesheet" href="{{stylesheet}}">
-    </head>
-    <body>
+{% extends "common.html" %}
         {% block content %}
         <table>
             <thead>
@@ -30,6 +26,4 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% endblock %}
-    </body>
-</html>
+        {% endblock content %}

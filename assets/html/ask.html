@@ -1,8 +1,5 @@
-<html>
-    <head>
-        <link rel="stylesheet" href="{{stylesheet}}">
-    </head>
-    <body>
+{% extends "common.html" %}
+{% block content %}
         <form method="POST" action="/questions/add">
             <input type="text" name="title" placeholder="Title">
             <br>
@@ -14,3 +11,4 @@
         </form>
     </body>
 </html>
+{% endblock content %}
