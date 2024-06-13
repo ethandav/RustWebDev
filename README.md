@@ -4,6 +4,7 @@ Homework Repo for CS 410P - Rust Web Developement
 
 <h1>To Build:</h1>
 docker compose up --build
+cd to QuestionsFrontEnd then run `trunk serve` then access http://localhost:8080
 
 <h2>Routes:</h2>
 /<br>
