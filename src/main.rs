@@ -51,6 +51,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index_handler))
         .route("/ask", get(ask_handler))
+        .route("/question", get(rand_question))
         .route("/questions", get(questions_index))
         .route("/questions/add", post(add_question))
         .route("/questions/:id", get(question_index))

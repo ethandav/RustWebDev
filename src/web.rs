@@ -3,6 +3,13 @@ use askama::Template;
 use serde::Deserialize;
 use axum::extract::Query;
 use axum::extract::Path;
+use axum::Json;
+use axum::{
+    extract::Extension,
+    response::{IntoResponse, Response},
+};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 #[derive(Debug, Deserialize)]
 pub struct PaginationQuery {
@@ -75,6 +82,16 @@ impl AskTemplate {
         Self {
             stylesheet: "/questions.css",
         }
+    }
+}
+
+pub async fn rand_question(
+    Extension(store): Extension<Arc<RwLock<Store>>>,
+) -> impl IntoResponse {
+    let question = store.read().await.get_random().await;
+    match question {
+        Ok(question) => Json(question).into_response(),
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response(),
     }
 }
 

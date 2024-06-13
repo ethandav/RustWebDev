@@ -66,14 +66,14 @@ impl Store {
             }
     }
 
-    /*pub async fn get_random(&self) -> Result<Question, sqlx::Error> {
+    pub async fn get_random(&self) -> Result<Question, sqlx::Error> {
         let row = sqlx::query(r#"SELECT * FROM questions ORDER BY RANDOM () LIMIT 1;"#)
             .fetch_one(&self.connection)
             .await?;
 
         let question = self.to_question(&row).await?;
         Ok(question)
-    }*/
+    }
 
     pub async fn get_question(&self, index: &i32) -> Result<Question, sqlx::Error> {
         let row = sqlx::query(r#"SELECT * FROM questions where id = $1;"#)
